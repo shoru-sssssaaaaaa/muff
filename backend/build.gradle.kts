@@ -1,0 +1,93 @@
+val kotlinVersion = "2.1.0"
+val ktorVersion = "3.0.3"
+val exposedVersion = "0.57.0"
+val hikariVersion = "6.2.1"
+val postgresVersion = "42.7.4"
+val logbackVersion = "1.5.12"
+val kotlinxDatetimeVersion = "0.6.1"
+val romeVersion = "2.1.0"
+val swaggerVersion = "2.2.22"
+
+plugins {
+    kotlin("jvm") version "2.1.0"
+    kotlin("plugin.serialization") version "2.1.0"
+    id("io.ktor.plugin") version "3.0.3"
+}
+
+group = "com.muff"
+version = "0.1.0"
+
+application {
+    mainClass.set("com.muff.ApplicationKt")
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Ktor Server
+    implementation("io.ktor:ktor-server-core:$ktorVersion")
+    implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+    implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
+    implementation("io.ktor:ktor-server-call-logging:$ktorVersion")
+    implementation("io.ktor:ktor-server-cors:$ktorVersion")
+    implementation("io.ktor:ktor-server-openapi:$ktorVersion")
+    implementation("io.ktor:ktor-server-swagger:$ktorVersion")
+
+    // Exposed ORM
+    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion")
+
+    // Database
+    implementation("org.postgresql:postgresql:$postgresVersion")
+    implementation("com.zaxxer:HikariCP:$hikariVersion")
+
+    // Serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:$kotlinxDatetimeVersion")
+
+    // OpenAPI / Swagger
+    implementation("io.swagger.core.v3:swagger-core-jakarta:$swaggerVersion")
+
+    // RSS Parser
+    implementation("com.rometools:rome:$romeVersion")
+
+    // Logging
+    implementation("ch.qos.logback:logback-classic:$logbackVersion")
+
+    // Test
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+    testImplementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    testImplementation("com.h2database:h2:2.3.232")
+}
+
+kotlin {
+    jvmToolchain(21)
+}
+
+// --- OpenAPI spec generation ---
+val generateOpenApi by tasks.registering(JavaExec::class) {
+    description = "Generate OpenAPI specification YAML from Kotlin code"
+    group = "documentation"
+    dependsOn("classes")
+    mainClass.set("com.muff.openapi.OpenApiGeneratorKt")
+    classpath = files(
+        sourceSets["main"].output.classesDirs,
+        configurations["runtimeClasspath"],
+    )
+    val outputFile = layout.buildDirectory.file("resources/main/openapi/documentation.yaml")
+    args(outputFile.get().asFile.absolutePath)
+    outputs.file(outputFile)
+    doFirst {
+        outputFile.get().asFile.parentFile.mkdirs()
+    }
+}
+
+tasks.named("jar") { dependsOn(generateOpenApi) }
+tasks.named("shadowJar") { dependsOn(generateOpenApi) }
+tasks.named<JavaExec>("run") { dependsOn(generateOpenApi) }

@@ -1,0 +1,51 @@
+package com.muff.job
+
+import com.muff.service.PopularityService
+import com.muff.service.RssPollingService
+import kotlinx.coroutines.*
+import org.slf4j.LoggerFactory
+import kotlin.time.Duration.Companion.minutes
+
+class ScheduledJobs(
+    private val rssPollingService: RssPollingService,
+    private val popularityService: PopularityService,
+    private val rssIntervalMinutes: Long,
+    private val popularityIntervalMinutes: Long,
+) {
+    private val logger = LoggerFactory.getLogger(ScheduledJobs::class.java)
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    fun start() {
+        logger.info(
+            "Starting scheduled jobs — RSS polling: {}min, Popularity: {}min",
+            rssIntervalMinutes, popularityIntervalMinutes
+        )
+
+        scope.launch {
+            while (isActive) {
+                try {
+                    rssPollingService.pollAll()
+                } catch (e: Exception) {
+                    logger.error("RSS polling job failed", e)
+                }
+                delay(rssIntervalMinutes.minutes)
+            }
+        }
+
+        scope.launch {
+            while (isActive) {
+                delay(popularityIntervalMinutes.minutes)
+                try {
+                    popularityService.aggregate()
+                } catch (e: Exception) {
+                    logger.error("Popularity aggregation job failed", e)
+                }
+            }
+        }
+    }
+
+    fun stop() {
+        logger.info("Stopping scheduled jobs")
+        scope.cancel()
+    }
+}

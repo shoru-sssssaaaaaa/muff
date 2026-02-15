@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MUFF Admin - Source Management</title>
+<style>
+  :root {
+    --bg: #f5f5f5;
+    --card: #fff;
+    --border: #ddd;
+    --primary: #2563eb;
+    --danger: #dc2626;
+    --success: #16a34a;
+    --muted: #6b7280;
+    --text: #1f2937;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 1.5rem; margin-bottom: 20px; }
+  h2 { font-size: 1.1rem; margin-bottom: 12px; color: var(--muted); }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+
+  /* Form */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-grid.full { grid-template-columns: 1fr; }
+  label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; color: var(--muted); }
+  input, select { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; }
+  input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37,99,235,0.1); }
+
+  .btn { padding: 8px 16px; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer; font-weight: 500; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger:hover { background: #b91c1c; }
+  .btn-sm { padding: 4px 10px; font-size: 0.8rem; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-outline:hover { background: var(--bg); }
+  .btn-row { display: flex; gap: 8px; margin-top: 12px; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th { text-align: left; padding: 10px 12px; background: var(--bg); border-bottom: 2px solid var(--border); font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:hover { background: #f9fafb; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
+  .badge-active { background: #dcfce7; color: var(--success); }
+  .badge-inactive { background: #fee2e2; color: var(--danger); }
+
+  .url-cell { max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.8rem; color: var(--muted); }
+  .actions { display: flex; gap: 6px; }
+
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--card); border-radius: 12px; padding: 24px; width: 500px; max-width: 90vw; }
+  .modal h2 { margin-bottom: 16px; }
+
+  .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 20px; border-radius: 8px; color: #fff; font-size: 0.9rem; z-index: 200; opacity: 0; transition: opacity 0.3s; }
+  .toast.show { opacity: 1; }
+  .toast-success { background: var(--success); }
+  .toast-error { background: var(--danger); }
+
+  .count { font-size: 0.85rem; color: var(--muted); margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<h1>MUFF Admin - Source Management</h1>
+
+<!-- Add form -->
+<div class="card">
+  <h2>Add New Source</h2>
+  <div class="form-grid">
+    <div>
+      <label for="add-name">Name</label>
+      <input type="text" id="add-name" placeholder="Site name">
+    </div>
+    <div>
+      <label for="add-category">Category</label>
+      <input type="text" id="add-category" placeholder="e.g. news, game, anime">
+    </div>
+    <div>
+      <label for="add-rss">RSS URL</label>
+      <input type="url" id="add-rss" placeholder="https://example.com/rss">
+    </div>
+    <div>
+      <label for="add-site">Site URL</label>
+      <input type="url" id="add-site" placeholder="https://example.com">
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="addSource()">Add Source</button>
+  </div>
+</div>
+
+<!-- Source list -->
+<div class="card">
+  <h2>Sources</h2>
+  <div id="source-count" class="count"></div>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Category</th>
+        <th>RSS URL</th>
+        <th>Site URL</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="source-table"></tbody>
+  </table>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <h2>Edit Source</h2>
+    <input type="hidden" id="edit-id">
+    <div class="form-grid">
+      <div>
+        <label for="edit-name">Name</label>
+        <input type="text" id="edit-name">
+      </div>
+      <div>
+        <label for="edit-category">Category</label>
+        <input type="text" id="edit-category">
+      </div>
+      <div>
+        <label for="edit-rss">RSS URL</label>
+        <input type="url" id="edit-rss">
+      </div>
+      <div>
+        <label for="edit-site">Site URL</label>
+        <input type="url" id="edit-site">
+      </div>
+      <div>
+        <label for="edit-status">Status</label>
+        <select id="edit-status">
+          <option value="active">active</option>
+          <option value="inactive">inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveEdit()">Save</button>
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '/admin/sources';
+
+async function loadSources() {
+  try {
+    const res = await fetch(API);
+    const sources = await res.json();
+    renderTable(sources);
+  } catch (e) {
+    showToast('Failed to load sources', 'error');
+  }
+}
+
+function renderTable(sources) {
+  const tbody = document.getElementById('source-table');
+  document.getElementById('source-count').textContent =
+    `${sources.length} source${sources.length !== 1 ? 's' : ''} registered`;
+
+  tbody.innerHTML = sources.map(s => `
+    <tr>
+      <td><strong>${esc(s.name)}</strong></td>
+      <td>${esc(s.default_category)}</td>
+      <td class="url-cell" title="${esc(s.rss_url)}">${esc(s.rss_url)}</td>
+      <td class="url-cell" title="${esc(s.site_url)}">${esc(s.site_url)}</td>
+      <td><span class="badge ${s.status === 'active' ? 'badge-active' : 'badge-inactive'}">${s.status}</span></td>
+      <td class="actions">
+        <button class="btn btn-outline btn-sm" onclick='openEdit(${JSON.stringify(s)})'>Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteSrc('${s.source_id}','${esc(s.name)}')">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function addSource() {
+  const name = document.getElementById('add-name').value.trim();
+  const rssUrl = document.getElementById('add-rss').value.trim();
+  const siteUrl = document.getElementById('add-site').value.trim();
+  const category = document.getElementById('add-category').value.trim();
+
+  if (!name || !rssUrl || !siteUrl || !category) {
+    showToast('All fields are required', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, rss_url: rssUrl, site_url: siteUrl, default_category: category }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || 'Failed');
+    }
+    showToast(`"${name}" added`, 'success');
+    document.getElementById('add-name').value = '';
+    document.getElementById('add-rss').value = '';
+    document.getElementById('add-site').value = '';
+    document.getElementById('add-category').value = '';
+    loadSources();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+function openEdit(s) {
+  document.getElementById('edit-id').value = s.source_id;
+  document.getElementById('edit-name').value = s.name;
+  document.getElementById('edit-rss').value = s.rss_url;
+  document.getElementById('edit-site').value = s.site_url;
+  document.getElementById('edit-category').value = s.default_category;
+  document.getElementById('edit-status').value = s.status;
+  document.getElementById('edit-modal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('edit-modal').classList.remove('show');
+}
+
+async function saveEdit() {
+  const id = document.getElementById('edit-id').value;
+  const body = {
+    name: document.getElementById('edit-name').value.trim(),
+    rss_url: document.getElementById('edit-rss').value.trim(),
+    site_url: document.getElementById('edit-site').value.trim(),
+    default_category: document.getElementById('edit-category').value.trim(),
+    status: document.getElementById('edit-status').value,
+  };
+
+  try {
+    const res = await fetch(`${API}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || 'Failed');
+    }
+    showToast('Source updated', 'success');
+    closeModal();
+    loadSources();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+async function deleteSrc(id, name) {
+  if (!confirm(`Delete "${name}"?\nThis cannot be undone.`)) return;
+
+  try {
+    const res = await fetch(`${API}/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete');
+    showToast(`"${name}" deleted`, 'success');
+    loadSources();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast toast-${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+// Close modal on overlay click
+document.getElementById('edit-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Load on page load
+loadSources();
+</script>
+</body>
+</html>
