@@ -23,7 +23,13 @@ enum APIError: Error, LocalizedError {
 final class APIClient: Sendable {
     let baseURL: String
 
-    init(baseURL: String = "http://localhost:8080") {
+    #if DEBUG
+    static let defaultBaseURL = "http://localhost:8080"
+    #else
+    static let defaultBaseURL = "https://api.muff.app"
+    #endif
+
+    init(baseURL: String = defaultBaseURL) {
         self.baseURL = baseURL
     }
 

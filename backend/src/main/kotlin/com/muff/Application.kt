@@ -33,7 +33,7 @@ fun Application.module() {
     install(CallLogging) {
         level = Level.INFO
     }
-    configureCors()
+    configureCors(appConfig.cors)
     configureSerialization()
     configureStatusPages()
     configureRouting(feedService)
