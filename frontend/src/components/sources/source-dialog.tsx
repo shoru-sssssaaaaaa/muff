@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -34,24 +34,35 @@ export function SourceDialog({
   onSubmit,
   isPending,
 }: SourceDialogProps) {
-  const [name, setName] = useState("");
-  const [rssUrl, setRssUrl] = useState("");
-  const [siteUrl, setSiteUrl] = useState("");
-  const [category, setCategory] = useState("");
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {open && (
+        <SourceDialogForm
+          source={source}
+          onSubmit={onSubmit}
+          onCancel={() => onOpenChange(false)}
+          isPending={isPending}
+        />
+      )}
+    </Dialog>
+  );
+}
 
-  useEffect(() => {
-    if (source) {
-      setName(source.name);
-      setRssUrl(source.rss_url);
-      setSiteUrl(source.site_url);
-      setCategory(source.default_category);
-    } else {
-      setName("");
-      setRssUrl("");
-      setSiteUrl("");
-      setCategory("");
-    }
-  }, [source, open]);
+function SourceDialogForm({
+  source,
+  onSubmit,
+  onCancel,
+  isPending,
+}: {
+  source: SourceResponse | null;
+  onSubmit: SourceDialogProps["onSubmit"];
+  onCancel: () => void;
+  isPending: boolean;
+}) {
+  const [name, setName] = useState(source?.name ?? "");
+  const [rssUrl, setRssUrl] = useState(source?.rss_url ?? "");
+  const [siteUrl, setSiteUrl] = useState(source?.site_url ?? "");
+  const [category, setCategory] = useState(source?.default_category ?? "");
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -65,64 +76,62 @@ export function SourceDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{source ? "ソースの編集" : "新規ソース"}</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">名前</Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="サイト名"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="rssUrl">RSS URL</Label>
-            <Input
-              id="rssUrl"
-              type="url"
-              value={rssUrl}
-              onChange={(e) => setRssUrl(e.target.value)}
-              placeholder="https://example.com/rss"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="siteUrl">サイトURL</Label>
-            <Input
-              id="siteUrl"
-              type="url"
-              value={siteUrl}
-              onChange={(e) => setSiteUrl(e.target.value)}
-              placeholder="https://example.com"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="category">カテゴリ</Label>
-            <Input
-              id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              placeholder="ニュース"
-              required
-            />
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              キャンセル
-            </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? "保存中..." : "保存"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>{source ? "ソースの編集" : "新規ソース"}</DialogTitle>
+      </DialogHeader>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="name">名前</Label>
+          <Input
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="サイト名"
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="rssUrl">RSS URL</Label>
+          <Input
+            id="rssUrl"
+            type="url"
+            value={rssUrl}
+            onChange={(e) => setRssUrl(e.target.value)}
+            placeholder="https://example.com/rss"
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="siteUrl">サイトURL</Label>
+          <Input
+            id="siteUrl"
+            type="url"
+            value={siteUrl}
+            onChange={(e) => setSiteUrl(e.target.value)}
+            placeholder="https://example.com"
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="category">カテゴリ</Label>
+          <Input
+            id="category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            placeholder="ニュース"
+            required
+          />
+        </div>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onCancel}>
+            キャンセル
+          </Button>
+          <Button type="submit" disabled={isPending}>
+            {isPending ? "保存中..." : "保存"}
+          </Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
   );
 }

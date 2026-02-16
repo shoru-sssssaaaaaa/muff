@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   Table,
   TableBody,
@@ -39,10 +40,13 @@ export function ArticleTable({ articles }: ArticleTableProps) {
           <TableRow key={article.article_id}>
             <TableCell>
               {article.thumbnail_url ? (
-                <img
+                <Image
                   src={article.thumbnail_url}
                   alt=""
+                  width={40}
+                  height={40}
                   className="h-10 w-10 rounded object-cover"
+                  unoptimized
                 />
               ) : (
                 <div className="h-10 w-10 rounded bg-muted" />

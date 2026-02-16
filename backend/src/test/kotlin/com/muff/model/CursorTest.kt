@@ -8,13 +8,13 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class CursorTest {
-
     @Test
     fun `encode and decode round-trip`() {
-        val original = FeedCursor(
-            publishedAt = Instant.parse("2026-01-15T10:30:00Z"),
-            articleId = UUID.fromString("550e8400-e29b-41d4-a716-446655440000"),
-        )
+        val original =
+            FeedCursor(
+                publishedAt = Instant.parse("2026-01-15T10:30:00Z"),
+                articleId = UUID.fromString("550e8400-e29b-41d4-a716-446655440000"),
+            )
 
         val encoded = original.encode()
         val decoded = FeedCursor.decode(encoded)

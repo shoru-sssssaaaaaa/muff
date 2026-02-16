@@ -39,12 +39,13 @@ fun Application.module() {
     configureRouting(feedService)
 
     // Scheduled Jobs
-    val jobs = ScheduledJobs(
-        rssPollingService = rssPollingService,
-        popularityService = popularityService,
-        rssIntervalMinutes = appConfig.jobs.rssPollingIntervalMinutes,
-        popularityIntervalMinutes = appConfig.jobs.popularityAggregationIntervalMinutes,
-    )
+    val jobs =
+        ScheduledJobs(
+            rssPollingService = rssPollingService,
+            popularityService = popularityService,
+            rssIntervalMinutes = appConfig.jobs.rssPollingIntervalMinutes,
+            popularityIntervalMinutes = appConfig.jobs.popularityAggregationIntervalMinutes,
+        )
     jobs.start()
 
     monitor.subscribe(ApplicationStopped) {

@@ -5,7 +5,6 @@ import com.muff.db.tables.Sources
 import com.rometools.rome.io.SyndFeedInput
 import com.rometools.rome.io.XmlReader
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import kotlinx.datetime.toKotlinInstant
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -14,23 +13,23 @@ import java.net.URI
 import java.util.*
 
 class RssPollingService {
-
     private val logger = LoggerFactory.getLogger(RssPollingService::class.java)
 
     fun pollAll() {
-        val sources = transaction {
-            Sources.selectAll()
-                .where { Sources.status eq "active" }
-                .toList()
-                .map { row ->
-                    SourceRecord(
-                        sourceId = row[Sources.sourceId],
-                        name = row[Sources.name],
-                        rssUrl = row[Sources.rssUrl],
-                        defaultCategory = row[Sources.defaultCategory],
-                    )
-                }
-        }
+        val sources =
+            transaction {
+                Sources.selectAll()
+                    .where { Sources.status eq "active" }
+                    .toList()
+                    .map { row ->
+                        SourceRecord(
+                            sourceId = row[Sources.sourceId],
+                            name = row[Sources.name],
+                            rssUrl = row[Sources.rssUrl],
+                            defaultCategory = row[Sources.defaultCategory],
+                        )
+                    }
+            }
 
         logger.info("Polling {} active sources", sources.size)
 
@@ -47,11 +46,12 @@ class RssPollingService {
 
     private fun pollSource(source: SourceRecord) {
         val input = SyndFeedInput()
-        val feed = URI(source.rssUrl).toURL().openStream().use { stream ->
-            XmlReader(stream).use { reader ->
-                input.build(reader)
+        val feed =
+            URI(source.rssUrl).toURL().openStream().use { stream ->
+                XmlReader(stream).use { reader ->
+                    input.build(reader)
+                }
             }
-        }
 
         val now = Clock.System.now()
 
@@ -59,16 +59,18 @@ class RssPollingService {
             for (entry in feed.entries) {
                 val articleUrl = normalizeUrl(entry.link ?: continue)
                 val title = normalizeTitle(entry.title ?: continue)
-                val publishedAt = entry.publishedDate?.toInstant()?.toKotlinInstant()
-                    ?: entry.updatedDate?.toInstant()?.toKotlinInstant()
-                    ?: now
+                val publishedAt =
+                    entry.publishedDate?.toInstant()?.toKotlinInstant()
+                        ?: entry.updatedDate?.toInstant()?.toKotlinInstant()
+                        ?: now
 
                 val thumbnail = extractThumbnail(entry)
 
                 // Upsert by URL
-                val existing = Articles.selectAll()
-                    .where { Articles.url eq articleUrl }
-                    .firstOrNull()
+                val existing =
+                    Articles.selectAll()
+                        .where { Articles.url eq articleUrl }
+                        .firstOrNull()
 
                 if (existing == null) {
                     Articles.insert {
@@ -101,12 +103,13 @@ class RssPollingService {
             val query = uri.query
             if (query.isNullOrBlank()) return url
 
-            val filtered = query.split("&")
-                .filter { param ->
-                    val key = param.substringBefore("=").lowercase()
-                    !key.startsWith("utm_") && key != "ref" && key != "source"
-                }
-                .joinToString("&")
+            val filtered =
+                query.split("&")
+                    .filter { param ->
+                        val key = param.substringBefore("=").lowercase()
+                        !key.startsWith("utm_") && key != "ref" && key != "source"
+                    }
+                    .joinToString("&")
 
             val newQuery = filtered.ifBlank { null }
             URI(uri.scheme, uri.authority, uri.path, newQuery, uri.fragment).toString()
@@ -148,10 +151,11 @@ class RssPollingService {
     private fun markFailure(sourceId: UUID) {
         val now = Clock.System.now()
         transaction {
-            val currentFailures = Sources.selectAll()
-                .where { Sources.sourceId eq sourceId }
-                .firstOrNull()
-                ?.get(Sources.consecutiveFailures) ?: 0
+            val currentFailures =
+                Sources.selectAll()
+                    .where { Sources.sourceId eq sourceId }
+                    .firstOrNull()
+                    ?.get(Sources.consecutiveFailures) ?: 0
 
             Sources.update({ Sources.sourceId eq sourceId }) {
                 it[lastFetchAt] = now

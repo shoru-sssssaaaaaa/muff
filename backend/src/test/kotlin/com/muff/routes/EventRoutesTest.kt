@@ -20,7 +20,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class EventRoutesTest {
-
     @BeforeTest
     fun setup() {
         TestDatabaseFactory.init()
@@ -28,86 +27,98 @@ class EventRoutesTest {
     }
 
     @Test
-    fun `POST events open creates event`() = testApplication {
-        application {
-            configureSerialization()
-            configureStatusPages()
-            configureRouting(FeedService())
+    fun `POST events open creates event`() =
+        testApplication {
+            application {
+                configureSerialization()
+                configureStatusPages()
+                configureRouting(FeedService())
+            }
+
+            val client =
+                createClient {
+                    install(ContentNegotiation) { json() }
+                }
+
+            val request =
+                OpenEventRequest(
+                    articleUrl = "https://example.com/article/1",
+                    occurredAt = Clock.System.now().toString(),
+                    anonDeviceIdHash = "abc123hash",
+                    appVersion = "1.0.0",
+                )
+
+            val response =
+                client.post("/v1/events/open") {
+                    contentType(ContentType.Application.Json)
+                    setBody(request)
+                }
+
+            assertEquals(HttpStatusCode.Created, response.status)
+
+            val count = transaction { OpenEvents.selectAll().count() }
+            assertEquals(1, count)
         }
-
-        val client = createClient {
-            install(ContentNegotiation) { json() }
-        }
-
-        val request = OpenEventRequest(
-            articleUrl = "https://example.com/article/1",
-            occurredAt = Clock.System.now().toString(),
-            anonDeviceIdHash = "abc123hash",
-            appVersion = "1.0.0",
-        )
-
-        val response = client.post("/v1/events/open") {
-            contentType(ContentType.Application.Json)
-            setBody(request)
-        }
-
-        assertEquals(HttpStatusCode.Created, response.status)
-
-        val count = transaction { OpenEvents.selectAll().count() }
-        assertEquals(1, count)
-    }
 
     @Test
-    fun `POST events open rejects empty article_url`() = testApplication {
-        application {
-            configureSerialization()
-            configureStatusPages()
-            configureRouting(FeedService())
+    fun `POST events open rejects empty article_url`() =
+        testApplication {
+            application {
+                configureSerialization()
+                configureStatusPages()
+                configureRouting(FeedService())
+            }
+
+            val client =
+                createClient {
+                    install(ContentNegotiation) { json() }
+                }
+
+            val request =
+                OpenEventRequest(
+                    articleUrl = "",
+                    occurredAt = Clock.System.now().toString(),
+                    anonDeviceIdHash = "abc123hash",
+                    appVersion = "1.0.0",
+                )
+
+            val response =
+                client.post("/v1/events/open") {
+                    contentType(ContentType.Application.Json)
+                    setBody(request)
+                }
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
         }
-
-        val client = createClient {
-            install(ContentNegotiation) { json() }
-        }
-
-        val request = OpenEventRequest(
-            articleUrl = "",
-            occurredAt = Clock.System.now().toString(),
-            anonDeviceIdHash = "abc123hash",
-            appVersion = "1.0.0",
-        )
-
-        val response = client.post("/v1/events/open") {
-            contentType(ContentType.Application.Json)
-            setBody(request)
-        }
-
-        assertEquals(HttpStatusCode.BadRequest, response.status)
-    }
 
     @Test
-    fun `POST events open rejects invalid occurred_at`() = testApplication {
-        application {
-            configureSerialization()
-            configureStatusPages()
-            configureRouting(FeedService())
+    fun `POST events open rejects invalid occurred_at`() =
+        testApplication {
+            application {
+                configureSerialization()
+                configureStatusPages()
+                configureRouting(FeedService())
+            }
+
+            val client =
+                createClient {
+                    install(ContentNegotiation) { json() }
+                }
+
+            val request =
+                OpenEventRequest(
+                    articleUrl = "https://example.com/article/1",
+                    occurredAt = "not-a-date",
+                    anonDeviceIdHash = "abc123hash",
+                    appVersion = "1.0.0",
+                )
+
+            val response =
+                client.post("/v1/events/open") {
+                    contentType(ContentType.Application.Json)
+                    setBody(request)
+                }
+
+            assertEquals(HttpStatusCode.BadRequest, response.status)
         }
-
-        val client = createClient {
-            install(ContentNegotiation) { json() }
-        }
-
-        val request = OpenEventRequest(
-            articleUrl = "https://example.com/article/1",
-            occurredAt = "not-a-date",
-            anonDeviceIdHash = "abc123hash",
-            appVersion = "1.0.0",
-        )
-
-        val response = client.post("/v1/events/open") {
-            contentType(ContentType.Application.Json)
-            setBody(request)
-        }
-
-        assertEquals(HttpStatusCode.BadRequest, response.status)
-    }
 }

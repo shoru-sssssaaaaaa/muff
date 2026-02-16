@@ -8,7 +8,7 @@ data class FeedCursor(
     val articleId: UUID,
 ) {
     fun encode(): String {
-        val raw = "${publishedAt}|${articleId}"
+        val raw = "$publishedAt|$articleId"
         return Base64.getUrlEncoder().withoutPadding().encodeToString(raw.toByteArray())
     }
 

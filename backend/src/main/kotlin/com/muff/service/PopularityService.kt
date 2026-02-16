@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory
 import kotlin.time.Duration.Companion.minutes
 
 class PopularityService {
-
     private val logger = LoggerFactory.getLogger(PopularityService::class.java)
 
     fun aggregate() {
@@ -23,15 +22,16 @@ class PopularityService {
 
         transaction {
             // Count open events per article_url in the 30-minute window
-            val counts = OpenEvents
-                .innerJoin(Articles, { OpenEvents.articleUrl }, { Articles.url })
-                .select(Articles.articleId, OpenEvents.articleUrl.count())
-                .where {
-                    (OpenEvents.occurredAt greaterEq windowStart) and
-                        (OpenEvents.occurredAt less bucketStart)
-                }
-                .groupBy(Articles.articleId)
-                .toList()
+            val counts =
+                OpenEvents
+                    .innerJoin(Articles, { OpenEvents.articleUrl }, { Articles.url })
+                    .select(Articles.articleId, OpenEvents.articleUrl.count())
+                    .where {
+                        (OpenEvents.occurredAt greaterEq windowStart) and
+                            (OpenEvents.occurredAt less bucketStart)
+                    }
+                    .groupBy(Articles.articleId)
+                    .toList()
 
             logger.info("Found {} articles with opens in window", counts.size)
 
@@ -40,13 +40,14 @@ class PopularityService {
                 val count = row[OpenEvents.articleUrl.count()].toInt()
 
                 // Upsert: insert or update open_count
-                val existing = PopularityBuckets
-                    .selectAll()
-                    .where {
-                        (PopularityBuckets.bucketStartAt eq bucketStart) and
-                            (PopularityBuckets.articleId eq articleId)
-                    }
-                    .firstOrNull()
+                val existing =
+                    PopularityBuckets
+                        .selectAll()
+                        .where {
+                            (PopularityBuckets.bucketStartAt eq bucketStart) and
+                                (PopularityBuckets.articleId eq articleId)
+                        }
+                        .firstOrNull()
 
                 if (existing != null) {
                     PopularityBuckets.update({

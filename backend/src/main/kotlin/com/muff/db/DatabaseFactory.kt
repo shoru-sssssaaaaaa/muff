@@ -12,7 +12,6 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object DatabaseFactory {
-
     fun init(config: AppConfig.DatabaseConfig) {
         val dataSource = hikari(config)
         Database.connect(dataSource)
@@ -27,15 +26,16 @@ object DatabaseFactory {
     }
 
     private fun hikari(config: AppConfig.DatabaseConfig): HikariDataSource {
-        val hikariConfig = HikariConfig().apply {
-            jdbcUrl = config.url
-            username = config.user
-            password = config.password
-            maximumPoolSize = config.maxPoolSize
-            isAutoCommit = false
-            transactionIsolation = "TRANSACTION_REPEATABLE_READ"
-            validate()
-        }
+        val hikariConfig =
+            HikariConfig().apply {
+                jdbcUrl = config.url
+                username = config.user
+                password = config.password
+                maximumPoolSize = config.maxPoolSize
+                isAutoCommit = false
+                transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+                validate()
+            }
         return HikariDataSource(hikariConfig)
     }
 }

@@ -22,7 +22,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class CatalogRoutesTest {
-
     @BeforeTest
     fun setup() {
         TestDatabaseFactory.init()
@@ -30,63 +29,67 @@ class CatalogRoutesTest {
     }
 
     @Test
-    fun `GET catalog sources returns active sources`() = testApplication {
-        application {
-            configureSerialization()
-            configureStatusPages()
-            configureRouting(FeedService())
-        }
-
-        // Insert test data
-        transaction {
-            Sources.insert {
-                it[sourceId] = UUID.randomUUID()
-                it[name] = "Test Source"
-                it[rssUrl] = "https://example.com/rss"
-                it[siteUrl] = "https://example.com"
-                it[defaultCategory] = "news"
-                it[status] = "active"
-                it[createdAt] = Clock.System.now()
+    fun `GET catalog sources returns active sources`() =
+        testApplication {
+            application {
+                configureSerialization()
+                configureStatusPages()
+                configureRouting(FeedService())
             }
-            Sources.insert {
-                it[sourceId] = UUID.randomUUID()
-                it[name] = "Inactive Source"
-                it[rssUrl] = "https://example.com/rss2"
-                it[siteUrl] = "https://example.com"
-                it[defaultCategory] = "news"
-                it[status] = "inactive"
-                it[createdAt] = Clock.System.now()
+
+            // Insert test data
+            transaction {
+                Sources.insert {
+                    it[sourceId] = UUID.randomUUID()
+                    it[name] = "Test Source"
+                    it[rssUrl] = "https://example.com/rss"
+                    it[siteUrl] = "https://example.com"
+                    it[defaultCategory] = "news"
+                    it[status] = "active"
+                    it[createdAt] = Clock.System.now()
+                }
+                Sources.insert {
+                    it[sourceId] = UUID.randomUUID()
+                    it[name] = "Inactive Source"
+                    it[rssUrl] = "https://example.com/rss2"
+                    it[siteUrl] = "https://example.com"
+                    it[defaultCategory] = "news"
+                    it[status] = "inactive"
+                    it[createdAt] = Clock.System.now()
+                }
             }
+
+            val client =
+                createClient {
+                    install(ContentNegotiation) { json() }
+                }
+
+            val response = client.get("/v1/catalog/sources")
+            assertEquals(HttpStatusCode.OK, response.status)
+
+            val sources = response.body<List<SourceResponse>>()
+            assertEquals(1, sources.size)
+            assertEquals("Test Source", sources[0].name)
         }
-
-        val client = createClient {
-            install(ContentNegotiation) { json() }
-        }
-
-        val response = client.get("/v1/catalog/sources")
-        assertEquals(HttpStatusCode.OK, response.status)
-
-        val sources = response.body<List<SourceResponse>>()
-        assertEquals(1, sources.size)
-        assertEquals("Test Source", sources[0].name)
-    }
 
     @Test
-    fun `GET catalog sources returns empty list when no sources`() = testApplication {
-        application {
-            configureSerialization()
-            configureStatusPages()
-            configureRouting(FeedService())
+    fun `GET catalog sources returns empty list when no sources`() =
+        testApplication {
+            application {
+                configureSerialization()
+                configureStatusPages()
+                configureRouting(FeedService())
+            }
+
+            val client =
+                createClient {
+                    install(ContentNegotiation) { json() }
+                }
+
+            val response = client.get("/v1/catalog/sources")
+            assertEquals(HttpStatusCode.OK, response.status)
+
+            val sources = response.body<List<SourceResponse>>()
+            assertEquals(0, sources.size)
         }
-
-        val client = createClient {
-            install(ContentNegotiation) { json() }
-        }
-
-        val response = client.get("/v1/catalog/sources")
-        assertEquals(HttpStatusCode.OK, response.status)
-
-        val sources = response.body<List<SourceResponse>>()
-        assertEquals(0, sources.size)
-    }
 }

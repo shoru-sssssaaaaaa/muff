@@ -23,20 +23,22 @@ fun Route.eventRoutes() {
                 return@post
             }
 
-            val occurredAt = try {
-                Instant.parse(request.occurredAt)
-            } catch (_: Exception) {
-                call.respond(HttpStatusCode.BadRequest, ErrorResponse("bad_request", "Invalid occurred_at format"))
-                return@post
-            }
-
-            val articleUuid = request.articleId?.let {
+            val occurredAt =
                 try {
-                    UUID.fromString(it)
+                    Instant.parse(request.occurredAt)
                 } catch (_: Exception) {
-                    null
+                    call.respond(HttpStatusCode.BadRequest, ErrorResponse("bad_request", "Invalid occurred_at format"))
+                    return@post
                 }
-            }
+
+            val articleUuid =
+                request.articleId?.let {
+                    try {
+                        UUID.fromString(it)
+                    } catch (_: Exception) {
+                        null
+                    }
+                }
 
             transaction {
                 OpenEvents.insert {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
 import { getSources, getArticles, getPopularArticles } from "@/lib/api";
 import {
   Card,
@@ -89,10 +90,13 @@ export default function DashboardPage() {
                   {index + 1}
                 </span>
                 {article.thumbnail_url && (
-                  <img
+                  <Image
                     src={article.thumbnail_url}
                     alt=""
+                    width={48}
+                    height={48}
                     className="h-12 w-12 shrink-0 rounded object-cover"
+                    unoptimized
                   />
                 )}
                 <div className="min-w-0 flex-1">
@@ -147,10 +151,13 @@ export default function DashboardPage() {
                 className="flex items-start gap-3 rounded-md border p-3"
               >
                 {article.thumbnail_url && (
-                  <img
+                  <Image
                     src={article.thumbnail_url}
                     alt=""
+                    width={48}
+                    height={48}
                     className="h-12 w-12 shrink-0 rounded object-cover"
+                    unoptimized
                   />
                 )}
                 <div className="min-w-0 flex-1">

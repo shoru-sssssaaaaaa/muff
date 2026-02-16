@@ -51,8 +51,9 @@ fun Route.adminRoutes(feedService: FeedService) {
         }
 
         put("/sources/{id}") {
-            val id = call.parameters["id"]
-                ?: return@put call.respond(HttpStatusCode.BadRequest, ErrorResponse("bad_request", "Missing source id"))
+            val id =
+                call.parameters["id"]
+                    ?: return@put call.respond(HttpStatusCode.BadRequest, ErrorResponse("bad_request", "Missing source id"))
             val req = call.receive<UpdateSourceRequest>()
             if (req.status !in listOf("active", "inactive")) {
                 call.respond(HttpStatusCode.BadRequest, ErrorResponse("bad_request", "Status must be 'active' or 'inactive'"))
@@ -67,8 +68,9 @@ fun Route.adminRoutes(feedService: FeedService) {
         }
 
         delete("/sources/{id}") {
-            val id = call.parameters["id"]
-                ?: return@delete call.respond(HttpStatusCode.BadRequest, ErrorResponse("bad_request", "Missing source id"))
+            val id =
+                call.parameters["id"]
+                    ?: return@delete call.respond(HttpStatusCode.BadRequest, ErrorResponse("bad_request", "Missing source id"))
             val deleted = feedService.deleteSource(id)
             if (deleted) {
                 call.respond(mapOf("status" to "ok"))

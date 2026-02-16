@@ -12,6 +12,7 @@ plugins {
     kotlin("jvm") version "2.1.0"
     kotlin("plugin.serialization") version "2.1.0"
     id("io.ktor.plugin") version "3.0.3"
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
 }
 
 group = "com.muff"
@@ -76,10 +77,11 @@ val generateOpenApi by tasks.registering(JavaExec::class) {
     group = "documentation"
     dependsOn("classes")
     mainClass.set("com.muff.openapi.OpenApiGeneratorKt")
-    classpath = files(
-        sourceSets["main"].output.classesDirs,
-        configurations["runtimeClasspath"],
-    )
+    classpath =
+        files(
+            sourceSets["main"].output.classesDirs,
+            configurations["runtimeClasspath"],
+        )
     val outputFile = layout.buildDirectory.file("resources/main/openapi/documentation.yaml")
     args(outputFile.get().asFile.absolutePath)
     outputs.file(outputFile)

@@ -30,8 +30,9 @@ fun Route.feedRoutes(feedService: FeedService) {
         }
 
         get("/category/{category}") {
-            val category = call.pathParameters["category"]
-                ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorResponse("bad_request", "Missing category"))
+            val category =
+                call.pathParameters["category"]
+                    ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorResponse("bad_request", "Missing category"))
 
             val limit = (call.queryParameters["limit"]?.toIntOrNull() ?: 20).coerceIn(1, 50)
             val cursorParam = call.queryParameters["cursor"]

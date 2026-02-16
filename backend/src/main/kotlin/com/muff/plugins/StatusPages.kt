@@ -14,7 +14,7 @@ fun Application.configureStatusPages() {
         exception<IllegalArgumentException> { call, cause ->
             call.respond(
                 HttpStatusCode.BadRequest,
-                ErrorResponse("bad_request", cause.message ?: "Bad request")
+                ErrorResponse("bad_request", cause.message ?: "Bad request"),
             )
         }
 
@@ -22,14 +22,14 @@ fun Application.configureStatusPages() {
             logger.error("Unhandled exception", cause)
             call.respond(
                 HttpStatusCode.InternalServerError,
-                ErrorResponse("internal_error", "Internal server error")
+                ErrorResponse("internal_error", "Internal server error"),
             )
         }
 
         status(HttpStatusCode.NotFound) { call, _ ->
             call.respond(
                 HttpStatusCode.NotFound,
-                ErrorResponse("not_found", "Resource not found")
+                ErrorResponse("not_found", "Resource not found"),
             )
         }
     }

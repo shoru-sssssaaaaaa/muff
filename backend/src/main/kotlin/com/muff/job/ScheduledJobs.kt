@@ -18,7 +18,8 @@ class ScheduledJobs(
     fun start() {
         logger.info(
             "Starting scheduled jobs — RSS polling: {}min, Popularity: {}min",
-            rssIntervalMinutes, popularityIntervalMinutes
+            rssIntervalMinutes,
+            popularityIntervalMinutes,
         )
 
         scope.launch {
