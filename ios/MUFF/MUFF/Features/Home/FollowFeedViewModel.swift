@@ -41,7 +41,7 @@ final class FollowFeedViewModel {
     }
 
     func refresh() async {
-        articles = []
+        isLoading = false
         await load()
     }
 
