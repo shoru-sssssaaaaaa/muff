@@ -1,13 +1,15 @@
 package com.muff.plugins
 
+import com.muff.config.AppConfig
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.cors.routing.*
 
-fun Application.configureCors() {
+fun Application.configureCors(corsConfig: AppConfig.CorsConfig) {
     install(CORS) {
-        allowHost("localhost:3000")
-        allowHost("127.0.0.1:3000")
+        corsConfig.allowedHosts.forEach { host ->
+            allowHost(host)
+        }
         allowHeader(HttpHeaders.ContentType)
         allowMethod(HttpMethod.Get)
         allowMethod(HttpMethod.Post)

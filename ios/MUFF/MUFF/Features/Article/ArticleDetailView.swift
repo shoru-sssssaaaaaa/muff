@@ -46,7 +46,7 @@ struct ArticleDetailView: View {
                 if isWebFiltering {
                     VStack(spacing: 12) {
                         ProgressView()
-                        Text("非表示設定を適用中...")
+                        Text("表示設定を適用中...")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
