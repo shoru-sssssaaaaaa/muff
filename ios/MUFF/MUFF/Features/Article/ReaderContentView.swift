@@ -110,8 +110,8 @@ struct ReaderContentView: View {
         let blockTags = ["div", "section", "aside", "ul", "ol", "table", "details"]
         for tag in blockTags {
             for keyword in keywords {
-                let escaped = NSRegularExpression.escapedPattern(for: keyword)
-                let pattern = "<\(tag)[^>]*>[^<]*(?:<(?!/\(tag))[^<]*)*\(escaped)(?:<(?!/\(tag))[^<]*)*</\(tag)>"
+                let flexibleKeyword = Self.flexibleFilterPattern(for: keyword)
+                let pattern = "<\(tag)[^>]*>[^<]*(?:<(?!/\(tag))[^<]*)*\(flexibleKeyword)(?:<(?!/\(tag))[^<]*)*</\(tag)>"
                 if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) {
                     content = regex.stringByReplacingMatches(
                         in: content,
@@ -122,6 +122,16 @@ struct ReaderContentView: View {
             }
         }
         return content
+    }
+
+    private static func flexibleFilterPattern(for keyword: String) -> String {
+        let parts = keyword.components(separatedBy: CharacterSet(charactersIn: "の　 \t"))
+            .filter { !$0.isEmpty }
+        guard parts.count > 1 else {
+            return NSRegularExpression.escapedPattern(for: keyword)
+        }
+        return parts.map { NSRegularExpression.escapedPattern(for: $0) }
+            .joined(separator: "[の\\s]*")
     }
 
     private func removeLinkedImages(from html: String, pageURL: String) -> String {

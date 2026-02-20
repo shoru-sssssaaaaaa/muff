@@ -79,10 +79,6 @@
       <input type="text" id="add-name" placeholder="Site name">
     </div>
     <div>
-      <label for="add-category">Category</label>
-      <input type="text" id="add-category" placeholder="e.g. news, game, anime">
-    </div>
-    <div>
       <label for="add-rss">RSS URL</label>
       <input type="url" id="add-rss" placeholder="https://example.com/rss">
     </div>
@@ -104,7 +100,6 @@
     <thead>
       <tr>
         <th>Name</th>
-        <th>Category</th>
         <th>RSS URL</th>
         <th>Site URL</th>
         <th>Status</th>
@@ -124,10 +119,6 @@
       <div>
         <label for="edit-name">Name</label>
         <input type="text" id="edit-name">
-      </div>
-      <div>
-        <label for="edit-category">Category</label>
-        <input type="text" id="edit-category">
       </div>
       <div>
         <label for="edit-rss">RSS URL</label>
@@ -176,7 +167,6 @@ function renderTable(sources) {
   tbody.innerHTML = sources.map(s => `
     <tr>
       <td><strong>${esc(s.name)}</strong></td>
-      <td>${esc(s.default_category)}</td>
       <td class="url-cell" title="${esc(s.rss_url)}">${esc(s.rss_url)}</td>
       <td class="url-cell" title="${esc(s.site_url)}">${esc(s.site_url)}</td>
       <td><span class="badge ${s.status === 'active' ? 'badge-active' : 'badge-inactive'}">${s.status}</span></td>
@@ -192,9 +182,8 @@ async function addSource() {
   const name = document.getElementById('add-name').value.trim();
   const rssUrl = document.getElementById('add-rss').value.trim();
   const siteUrl = document.getElementById('add-site').value.trim();
-  const category = document.getElementById('add-category').value.trim();
 
-  if (!name || !rssUrl || !siteUrl || !category) {
+  if (!name || !rssUrl || !siteUrl) {
     showToast('All fields are required', 'error');
     return;
   }
@@ -203,7 +192,7 @@ async function addSource() {
     const res = await fetch(API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, rss_url: rssUrl, site_url: siteUrl, default_category: category }),
+      body: JSON.stringify({ name, rss_url: rssUrl, site_url: siteUrl }),
     });
     if (!res.ok) {
       const err = await res.json();
@@ -213,7 +202,6 @@ async function addSource() {
     document.getElementById('add-name').value = '';
     document.getElementById('add-rss').value = '';
     document.getElementById('add-site').value = '';
-    document.getElementById('add-category').value = '';
     loadSources();
   } catch (e) {
     showToast(e.message, 'error');
@@ -225,7 +213,6 @@ function openEdit(s) {
   document.getElementById('edit-name').value = s.name;
   document.getElementById('edit-rss').value = s.rss_url;
   document.getElementById('edit-site').value = s.site_url;
-  document.getElementById('edit-category').value = s.default_category;
   document.getElementById('edit-status').value = s.status;
   document.getElementById('edit-modal').classList.add('show');
 }
@@ -240,7 +227,6 @@ async function saveEdit() {
     name: document.getElementById('edit-name').value.trim(),
     rss_url: document.getElementById('edit-rss').value.trim(),
     site_url: document.getElementById('edit-site').value.trim(),
-    default_category: document.getElementById('edit-category').value.trim(),
     status: document.getElementById('edit-status').value,
   };
 

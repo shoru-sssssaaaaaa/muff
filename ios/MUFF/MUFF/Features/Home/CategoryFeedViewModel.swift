@@ -56,9 +56,9 @@ final class CategoryFeedViewModel {
     }
 
     func refresh() async {
-        articles = []
         hasMore = true
         nextCursor = nil
+        isLoading = false
         await loadInitial()
     }
 }

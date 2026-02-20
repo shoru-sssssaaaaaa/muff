@@ -2,6 +2,7 @@ package com.muff.db
 
 import com.muff.config.AppConfig
 import com.muff.db.tables.Articles
+import com.muff.db.tables.CategoryRules
 import com.muff.db.tables.OpenEvents
 import com.muff.db.tables.PopularityBuckets
 import com.muff.db.tables.Sources
@@ -21,6 +22,7 @@ object DatabaseFactory {
                 Articles,
                 OpenEvents,
                 PopularityBuckets,
+                CategoryRules,
             )
         }
     }

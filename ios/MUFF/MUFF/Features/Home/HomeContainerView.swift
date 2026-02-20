@@ -24,7 +24,9 @@ enum HomeTab: CaseIterable {
 
 struct HomeContainerView: View {
     @State private var selectedTab: HomeTab = .popular
-    @State private var refreshTrigger = 0
+    @State private var popularRefreshTrigger = 0
+    @State private var newRefreshTrigger = 0
+    @State private var followRefreshTrigger = 0
 
     var body: some View {
         VStack(spacing: 0) {
@@ -62,13 +64,13 @@ struct HomeContainerView: View {
 
             // Content
             TabView(selection: $selectedTab) {
-                PopularFeedView(refreshTrigger: refreshTrigger)
+                PopularFeedView(refreshTrigger: popularRefreshTrigger)
                     .tag(HomeTab.popular)
 
-                NewFeedView(refreshTrigger: refreshTrigger)
+                NewFeedView(refreshTrigger: newRefreshTrigger)
                     .tag(HomeTab.new)
 
-                FollowFeedView(refreshTrigger: refreshTrigger)
+                FollowFeedView(refreshTrigger: followRefreshTrigger)
                     .tag(HomeTab.follow)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
@@ -79,7 +81,11 @@ struct HomeContainerView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    refreshTrigger += 1
+                    switch selectedTab {
+                    case .popular: popularRefreshTrigger += 1
+                    case .new: newRefreshTrigger += 1
+                    case .follow: followRefreshTrigger += 1
+                    }
                 } label: {
                     Image(systemName: "arrow.clockwise")
                 }

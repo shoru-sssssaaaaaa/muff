@@ -9,7 +9,6 @@ data class SourceResponse(
     val name: String,
     @SerialName("rss_url") val rssUrl: String,
     @SerialName("site_url") val siteUrl: String,
-    @SerialName("default_category") val defaultCategory: String,
     val status: String,
     @SerialName("consecutive_failures") val consecutiveFailures: Int = 0,
     @SerialName("last_fetch_at") val lastFetchAt: String? = null,
@@ -50,6 +49,34 @@ data class ErrorResponse(
     val message: String,
 )
 
+// Category Rules
+
+@Serializable
+data class CategoryRuleResponse(
+    @SerialName("category_rule_id") val categoryRuleId: String,
+    val name: String,
+    val keywords: List<String>,
+    @SerialName("is_default") val isDefault: Boolean,
+    @SerialName("sort_order") val sortOrder: Int,
+    @SerialName("article_count") val articleCount: Long = 0,
+)
+
+@Serializable
+data class CreateCategoryRuleRequest(
+    val name: String,
+    val keywords: List<String>,
+    @SerialName("is_default") val isDefault: Boolean = false,
+    @SerialName("sort_order") val sortOrder: Int = 0,
+)
+
+@Serializable
+data class UpdateCategoryRuleRequest(
+    val name: String,
+    val keywords: List<String>,
+    @SerialName("is_default") val isDefault: Boolean = false,
+    @SerialName("sort_order") val sortOrder: Int = 0,
+)
+
 // Admin DTOs
 
 @Serializable
@@ -57,7 +84,6 @@ data class CreateSourceRequest(
     val name: String,
     @SerialName("rss_url") val rssUrl: String,
     @SerialName("site_url") val siteUrl: String,
-    @SerialName("default_category") val defaultCategory: String,
 )
 
 @Serializable
@@ -65,6 +91,5 @@ data class UpdateSourceRequest(
     val name: String,
     @SerialName("rss_url") val rssUrl: String,
     @SerialName("site_url") val siteUrl: String,
-    @SerialName("default_category") val defaultCategory: String,
     val status: String,
 )

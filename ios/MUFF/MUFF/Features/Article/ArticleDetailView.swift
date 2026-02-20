@@ -81,7 +81,7 @@ struct ArticleDetailView: View {
                 Button {
                     showBookmarkPicker = true
                 } label: {
-                    Label("ブックマーク", systemImage: viewModel.isBookmarked() ? "star.fill" : "star")
+                    Label("ブックマーク", systemImage: viewModel.bookmarked ? "star.fill" : "star")
                 }
 
                 Spacer()
@@ -93,7 +93,9 @@ struct ArticleDetailView: View {
                 }
             }
         }
-        .sheet(isPresented: $showBookmarkPicker) {
+        .sheet(isPresented: $showBookmarkPicker, onDismiss: {
+            viewModel.refreshBookmarkState()
+        }) {
             FolderPickerSheet(article: viewModel.currentArticle)
         }
         .sheet(isPresented: $showSettings, onDismiss: {

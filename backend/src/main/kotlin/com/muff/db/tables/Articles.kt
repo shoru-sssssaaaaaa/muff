@@ -11,6 +11,8 @@ object Articles : Table("articles") {
     val publishedAt = timestamp("published_at")
     val thumbnailUrl = varchar("thumbnail_url", 2048).nullable()
     val category = varchar("category", 100)
+    val rssCategory = text("rss_category").nullable()
+    val ruleCategory = varchar("rule_category", 100).nullable()
     val ingestedAt = timestamp("ingested_at")
 
     override val primaryKey = PrimaryKey(articleId)

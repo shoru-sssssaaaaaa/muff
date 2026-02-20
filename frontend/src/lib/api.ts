@@ -3,6 +3,9 @@ import type {
   FeedResponse,
   CreateSourceRequest,
   UpdateSourceRequest,
+  CategoryRuleResponse,
+  CreateCategoryRuleRequest,
+  UpdateCategoryRuleRequest,
 } from "@/types/api";
 
 const BASE_URL = "/api";
@@ -44,6 +47,37 @@ export function updateSource(id: string, data: UpdateSourceRequest) {
 export function deleteSource(id: string) {
   return request<{ status: string }>(`/admin/sources/${id}`, {
     method: "DELETE",
+  });
+}
+
+// Category Rules
+export function getCategoryRules() {
+  return request<CategoryRuleResponse[]>("/admin/category-rules");
+}
+
+export function createCategoryRule(data: CreateCategoryRuleRequest) {
+  return request<CategoryRuleResponse>("/admin/category-rules", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateCategoryRule(id: string, data: UpdateCategoryRuleRequest) {
+  return request<CategoryRuleResponse>(`/admin/category-rules/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteCategoryRule(id: string) {
+  return request<{ status: string }>(`/admin/category-rules/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function reclassifyArticles() {
+  return request<{ status: string }>("/admin/category-rules/reclassify", {
+    method: "POST",
   });
 }
 

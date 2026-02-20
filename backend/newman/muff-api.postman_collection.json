@@ -49,7 +49,6 @@
                   "        pm.expect(source).to.have.property('name');",
                   "        pm.expect(source).to.have.property('rss_url');",
                   "        pm.expect(source).to.have.property('site_url');",
-                  "        pm.expect(source).to.have.property('default_category');",
                   "        pm.expect(source).to.have.property('status');",
                   "        pm.expect(source.status).to.equal('active');",
                   "    });",

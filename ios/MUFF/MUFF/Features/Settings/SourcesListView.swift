@@ -84,9 +84,10 @@ struct SourcesListView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(source.name)
                     .font(.body)
-                Text(source.defaultCategory)
+                Text(source.siteUrl)
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
             }
             Spacer()
             Button {

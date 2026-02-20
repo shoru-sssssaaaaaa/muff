@@ -6,14 +6,36 @@ import com.rometools.rome.io.SyndFeedInput
 import com.rometools.rome.io.XmlReader
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toKotlinInstant
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.update
 import org.slf4j.LoggerFactory
 import java.net.URI
-import java.util.*
+import java.util.UUID
 
-class RssPollingService {
+class RssPollingService(
+    private val categoryClassifier: CategoryClassifier = CategoryClassifier(),
+) {
     private val logger = LoggerFactory.getLogger(RssPollingService::class.java)
+
+    fun reclassifyAll() {
+        transaction {
+            val rows = Articles.selectAll().toList()
+            var updated = 0
+            for (row in rows) {
+                val title = row[Articles.title]
+                val newCategory = categoryClassifier.classify(title)
+                if (row[Articles.ruleCategory] != newCategory) {
+                    Articles.update({ Articles.articleId eq row[Articles.articleId] }) {
+                        it[ruleCategory] = newCategory
+                    }
+                    updated++
+                }
+            }
+            logger.info("Reclassified {} articles", updated)
+        }
+    }
 
     fun pollAll() {
         val sources =
@@ -26,7 +48,6 @@ class RssPollingService {
                             sourceId = row[Sources.sourceId],
                             name = row[Sources.name],
                             rssUrl = row[Sources.rssUrl],
-                            defaultCategory = row[Sources.defaultCategory],
                         )
                     }
             }
@@ -73,6 +94,13 @@ class RssPollingService {
                         .firstOrNull()
 
                 if (existing == null) {
+                    val rssCategories =
+                        entry.categories
+                            ?.mapNotNull { it.name?.trim() }
+                            ?.filter { it.isNotEmpty() }
+                            ?.joinToString(", ")
+                            ?.ifEmpty { null }
+
                     Articles.insert {
                         it[articleId] = UUID.randomUUID()
                         it[Articles.sourceId] = source.sourceId
@@ -80,7 +108,9 @@ class RssPollingService {
                         it[Articles.url] = articleUrl
                         it[Articles.publishedAt] = publishedAt
                         it[thumbnailUrl] = thumbnail
-                        it[category] = source.defaultCategory
+                        it[category] = ""
+                        it[rssCategory] = rssCategories
+                        it[ruleCategory] = categoryClassifier.classify(title)
                         it[ingestedAt] = now
                     }
                 }
@@ -168,6 +198,5 @@ class RssPollingService {
         val sourceId: UUID,
         val name: String,
         val rssUrl: String,
-        val defaultCategory: String,
     )
 }

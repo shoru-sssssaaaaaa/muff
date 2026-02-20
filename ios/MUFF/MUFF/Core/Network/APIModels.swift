@@ -8,7 +8,6 @@ struct SourceResponse: Codable, Identifiable, Hashable, Sendable {
     let name: String
     let rssUrl: String
     let siteUrl: String
-    let defaultCategory: String
     let status: String
 
     var id: String { sourceId }

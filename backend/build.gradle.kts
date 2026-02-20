@@ -71,6 +71,21 @@ kotlin {
     jvmToolchain(21)
 }
 
+ktlint {
+    android.set(false)
+    version.set("0.50.0")
+    verbose.set(true)
+    outputToConsole.set(true)
+    reporters {
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
+    }
+    filter {
+        exclude("**/generated/**", "**/build/**")
+        include("**/kotlin/**")
+    }
+}
+
 // --- OpenAPI spec generation ---
 val generateOpenApi by tasks.registering(JavaExec::class) {
     description = "Generate OpenAPI specification YAML from Kotlin code"

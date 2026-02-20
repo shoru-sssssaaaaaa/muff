@@ -95,6 +95,11 @@ final class APIClient: Sendable {
         return try await perform(request)
     }
 
+    func fetchCategories() async throws -> [String] {
+        let request = try buildRequest(endpoint: .catalogCategories)
+        return try await perform(request)
+    }
+
     func fetchNewFeed(cursor: String? = nil, limit: Int? = nil) async throws -> FeedResponse {
         let request = try buildRequest(endpoint: .feedNew(cursor: cursor, limit: limit))
         return try await perform(request)

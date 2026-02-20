@@ -57,9 +57,9 @@ final class NewFeedViewModel {
     }
 
     func refresh() async {
-        articles = []
         hasMore = true
         nextCursor = nil
+        isLoading = false
         await loadInitial()
     }
 }

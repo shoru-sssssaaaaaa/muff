@@ -1,7 +1,8 @@
 package com.muff.model
 
 import kotlinx.datetime.Instant
-import java.util.*
+import java.util.Base64
+import java.util.UUID
 
 data class FeedCursor(
     val publishedAt: Instant,

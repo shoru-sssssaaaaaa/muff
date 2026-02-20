@@ -1,9 +1,19 @@
 package com.muff.openapi
 
 import io.swagger.v3.core.util.Yaml
-import io.swagger.v3.oas.models.*
+import io.swagger.v3.oas.models.Components
+import io.swagger.v3.oas.models.OpenAPI
+import io.swagger.v3.oas.models.Operation
+import io.swagger.v3.oas.models.PathItem
+import io.swagger.v3.oas.models.Paths
 import io.swagger.v3.oas.models.info.Info
-import io.swagger.v3.oas.models.media.*
+import io.swagger.v3.oas.models.media.ArraySchema
+import io.swagger.v3.oas.models.media.Content
+import io.swagger.v3.oas.models.media.IntegerSchema
+import io.swagger.v3.oas.models.media.MediaType
+import io.swagger.v3.oas.models.media.ObjectSchema
+import io.swagger.v3.oas.models.media.Schema
+import io.swagger.v3.oas.models.media.StringSchema
 import io.swagger.v3.oas.models.parameters.Parameter
 import io.swagger.v3.oas.models.parameters.RequestBody
 import io.swagger.v3.oas.models.responses.ApiResponse
@@ -68,7 +78,8 @@ private fun catalogSourcesPath() =
                                     Content().addMediaType(
                                         "application/json",
                                         MediaType().apply {
-                                            schema = ArraySchema().items(Schema<Any>().`$ref`("#/components/schemas/SourceResponse"))
+                                            schema =
+                                                ArraySchema().items(Schema<Any>().`$ref`("#/components/schemas/SourceResponse"))
                                         },
                                     )
                             },
@@ -96,7 +107,8 @@ private fun feedPopularPath() =
             Operation().apply {
                 tags = listOf("Feed")
                 summary = "人気フィードを取得"
-                description = "最新の30分バケットにおけるopen数の降順で記事一覧を返す。全ユーザー横断の集計。view_count付き。"
+                description =
+                    "最新の30分バケットにおけるopen数の降順で記事一覧を返す。全ユーザー横断の集計。view_count付き。"
                 operationId = "getPopularFeed"
                 parameters = listOf(limitParam())
                 responses = feedResponses("人気記事一覧")
@@ -236,7 +248,6 @@ private fun buildComponents() =
                         addProperty("name", StringSchema().apply { description = "サイト名" })
                         addProperty("rss_url", StringSchema().apply { description = "RSS URL" })
                         addProperty("site_url", StringSchema().apply { description = "サイトURL" })
-                        addProperty("default_category", StringSchema().apply { description = "デフォルトカテゴリ" })
                         addProperty(
                             "status",
                             StringSchema().apply {
@@ -244,7 +255,7 @@ private fun buildComponents() =
                                 enum = listOf("active", "inactive")
                             },
                         )
-                        required = listOf("source_id", "name", "rss_url", "site_url", "default_category", "status")
+                        required = listOf("source_id", "name", "rss_url", "site_url", "status")
                     },
                 "ArticleResponse" to
                     ObjectSchema().apply {
@@ -276,7 +287,15 @@ private fun buildComponents() =
                                 nullable = true
                             },
                         )
-                        required = listOf("article_id", "source_id", "source_name", "title", "url", "published_at", "category")
+                        required = listOf(
+                            "article_id",
+                            "source_id",
+                            "source_name",
+                            "title",
+                            "url",
+                            "published_at",
+                            "category",
+                        )
                     },
                 "FeedResponse" to
                     ObjectSchema().apply {
@@ -315,7 +334,10 @@ private fun buildComponents() =
                                 format = "date-time"
                             },
                         )
-                        addProperty("anon_device_id_hash", StringSchema().apply { description = "匿名デバイスIDのハッシュ" })
+                        addProperty(
+                            "anon_device_id_hash",
+                            StringSchema().apply { description = "匿名デバイスIDのハッシュ" },
+                        )
                         addProperty("app_version", StringSchema().apply { description = "アプリバージョン" })
                         required = listOf("article_url", "occurred_at", "anon_device_id_hash", "app_version")
                     },

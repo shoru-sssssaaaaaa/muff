@@ -179,6 +179,8 @@ struct WebContentView: UIViewRepresentable {
                 let kwArray = escaped.map { "\"\($0)\"" }.joined(separator: ",")
                 js += """
                 var _kw=[\(kwArray)];
+                function _norm(s){return s.replace(/[の\\s]/g,'');}
+                var _kwN=_kw.map(_norm);
                 function hideKW(){
                 var BLK={DIV:1,SECTION:1,ASIDE:1,NAV:1,UL:1,OL:1,TABLE:1,DETAILS:1};
                 var HDR={H1:1,H2:1,H3:1,H4:1,H5:1,H6:1};
@@ -196,7 +198,7 @@ struct WebContentView: UIViewRepresentable {
                 while(w.nextNode()){
                 var txt=w.currentNode.textContent.trim();
                 for(var i=0;i<_kw.length;i++){
-                if(txt.indexOf(_kw[i])!==-1){
+                if(_norm(txt).indexOf(_kwN[i])!==-1){
                 var el=w.currentNode.parentElement;
                 while(el&&el!==document.body){
                 var tag=el.tagName;

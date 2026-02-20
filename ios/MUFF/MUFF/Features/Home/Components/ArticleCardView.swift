@@ -58,15 +58,18 @@ struct ArticleCardView: View {
 
                     // Metadata row
                     HStack(spacing: 8) {
-                        if let viewCount = article.viewCount {
-                            Label("\(viewCount)", systemImage: "eye")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                        }
-
                         Text(article.publishedAt.relativeTimeString)
                             .font(.caption2)
                             .foregroundStyle(.secondary)
+
+                        Spacer()
+
+                        if let viewCount = article.viewCount {
+                            Text("\(viewCount) views")
+                                .font(.caption2)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.blue)
+                        }
                     }
                 }
             }

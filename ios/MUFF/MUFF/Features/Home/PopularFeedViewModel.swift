@@ -40,7 +40,7 @@ final class PopularFeedViewModel {
     }
 
     func refresh() async {
-        articles = []
+        isLoading = false
         await load()
     }
 }
