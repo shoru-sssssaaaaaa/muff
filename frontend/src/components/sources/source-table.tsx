@@ -49,7 +49,6 @@ export function SourceTable({
             <TableHead>名前</TableHead>
             <TableHead>RSS URL</TableHead>
             <TableHead>サイトURL</TableHead>
-            <TableHead>カテゴリ</TableHead>
             <TableHead>ステータス</TableHead>
             <TableHead className="w-[80px]" />
           </TableRow>
@@ -57,7 +56,7 @@ export function SourceTable({
         <TableBody>
           {sources.length === 0 && (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-muted-foreground">
+              <TableCell colSpan={5} className="text-center text-muted-foreground">
                 ソースが見つかりません。
               </TableCell>
             </TableRow>
@@ -83,9 +82,6 @@ export function SourceTable({
               </TableCell>
               <TableCell className="max-w-[200px] truncate text-xs">
                 {source.site_url}
-              </TableCell>
-              <TableCell>
-                <Badge variant="secondary">{source.default_category}</Badge>
               </TableCell>
               <TableCell>
                 <Badge

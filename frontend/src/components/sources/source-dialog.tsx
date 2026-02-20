@@ -21,7 +21,6 @@ interface SourceDialogProps {
     name: string;
     rss_url: string;
     site_url: string;
-    default_category: string;
     status?: string;
   }) => void;
   isPending: boolean;
@@ -62,7 +61,6 @@ function SourceDialogForm({
   const [name, setName] = useState(source?.name ?? "");
   const [rssUrl, setRssUrl] = useState(source?.rss_url ?? "");
   const [siteUrl, setSiteUrl] = useState(source?.site_url ?? "");
-  const [category, setCategory] = useState(source?.default_category ?? "");
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -70,7 +68,6 @@ function SourceDialogForm({
       name,
       rss_url: rssUrl,
       site_url: siteUrl,
-      default_category: category,
       ...(source ? { status: source.status } : {}),
     });
   }
@@ -110,16 +107,6 @@ function SourceDialogForm({
             value={siteUrl}
             onChange={(e) => setSiteUrl(e.target.value)}
             placeholder="https://example.com"
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="category">カテゴリ</Label>
-          <Input
-            id="category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            placeholder="ニュース"
             required
           />
         </div>

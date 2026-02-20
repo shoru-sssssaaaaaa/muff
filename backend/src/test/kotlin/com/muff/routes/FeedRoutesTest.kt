@@ -7,7 +7,9 @@ import com.muff.model.FeedResponse
 import com.muff.plugins.configureRouting
 import com.muff.plugins.configureSerialization
 import com.muff.plugins.configureStatusPages
+import com.muff.service.CategoryClassifier
 import com.muff.service.FeedService
+import com.muff.service.RssPollingService
 import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
@@ -39,7 +41,7 @@ class FeedRoutesTest {
                 it[name] = "Test Source"
                 it[rssUrl] = "https://example.com/rss"
                 it[siteUrl] = "https://example.com"
-                it[defaultCategory] = "news"
+                it[defaultCategory] = ""
                 it[status] = "active"
                 it[createdAt] = Clock.System.now()
             }
@@ -52,7 +54,10 @@ class FeedRoutesTest {
             application {
                 configureSerialization()
                 configureStatusPages()
-                configureRouting(FeedService())
+                val classifier = CategoryClassifier()
+                val feedService = FeedService(classifier)
+                val rssPollingService = RssPollingService(classifier)
+                configureRouting(feedService, classifier, rssPollingService)
             }
 
             val now = Clock.System.now()
@@ -64,7 +69,7 @@ class FeedRoutesTest {
                         it[title] = "Article $i"
                         it[url] = "https://example.com/article/$i"
                         it[publishedAt] = now - (i.hours)
-                        it[category] = "news"
+                        it[category] = ""
                         it[ingestedAt] = now
                     }
                 }
@@ -90,7 +95,10 @@ class FeedRoutesTest {
             application {
                 configureSerialization()
                 configureStatusPages()
-                configureRouting(FeedService())
+                val classifier = CategoryClassifier()
+                val feedService = FeedService(classifier)
+                val rssPollingService = RssPollingService(classifier)
+                configureRouting(feedService, classifier, rssPollingService)
             }
 
             val now = Clock.System.now()
@@ -102,7 +110,7 @@ class FeedRoutesTest {
                         it[title] = "Article $i"
                         it[url] = "https://example.com/article-page/$i"
                         it[publishedAt] = now - (i.hours)
-                        it[category] = "news"
+                        it[category] = ""
                         it[ingestedAt] = now
                     }
                 }
@@ -135,7 +143,10 @@ class FeedRoutesTest {
             application {
                 configureSerialization()
                 configureStatusPages()
-                configureRouting(FeedService())
+                val classifier = CategoryClassifier()
+                val feedService = FeedService(classifier)
+                val rssPollingService = RssPollingService(classifier)
+                configureRouting(feedService, classifier, rssPollingService)
             }
 
             val now = Clock.System.now()
@@ -146,7 +157,8 @@ class FeedRoutesTest {
                     it[title] = "News Article"
                     it[url] = "https://example.com/news/1"
                     it[publishedAt] = now
-                    it[category] = "news"
+                    it[category] = ""
+                    it[ruleCategory] = "news"
                     it[ingestedAt] = now
                 }
                 Articles.insert {
@@ -155,7 +167,8 @@ class FeedRoutesTest {
                     it[title] = "Sports Article"
                     it[url] = "https://example.com/sports/1"
                     it[publishedAt] = now
-                    it[category] = "sports"
+                    it[category] = ""
+                    it[ruleCategory] = "sports"
                     it[ingestedAt] = now
                 }
             }
@@ -177,7 +190,10 @@ class FeedRoutesTest {
             application {
                 configureSerialization()
                 configureStatusPages()
-                configureRouting(FeedService())
+                val classifier = CategoryClassifier()
+                val feedService = FeedService(classifier)
+                val rssPollingService = RssPollingService(classifier)
+                configureRouting(feedService, classifier, rssPollingService)
             }
 
             val client =
@@ -195,7 +211,10 @@ class FeedRoutesTest {
             application {
                 configureSerialization()
                 configureStatusPages()
-                configureRouting(FeedService())
+                val classifier = CategoryClassifier()
+                val feedService = FeedService(classifier)
+                val rssPollingService = RssPollingService(classifier)
+                configureRouting(feedService, classifier, rssPollingService)
             }
 
             val client =

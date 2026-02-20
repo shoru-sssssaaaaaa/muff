@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getArticles, getSources } from "@/lib/api";
+import { getArticles, getSources, getCategoryRules } from "@/lib/api";
 import { ArticleTable } from "@/components/articles/article-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +27,11 @@ export default function ArticlesPage() {
     queryFn: getSources,
   });
 
+  const categoryRulesQuery = useQuery({
+    queryKey: ["categoryRules"],
+    queryFn: getCategoryRules,
+  });
+
   const articlesQuery = useQuery({
     queryKey: ["articles", sourceId, category, currentCursor],
     queryFn: () =>
@@ -38,9 +43,7 @@ export default function ArticlesPage() {
       }),
   });
 
-  const categories = sourcesQuery.data
-    ? [...new Set(sourcesQuery.data.map((s) => s.default_category))]
-    : [];
+  const categories = categoryRulesQuery.data?.map((r) => r.name) ?? [];
 
   function handleFilterChange(newSourceId: string, newCategory: string) {
     setSourceId(newSourceId);

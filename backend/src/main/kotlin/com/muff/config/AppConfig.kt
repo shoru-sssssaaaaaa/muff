@@ -1,6 +1,6 @@
 package com.muff.config
 
-import io.ktor.server.application.*
+import io.ktor.server.application.ApplicationEnvironment
 
 data class AppConfig(
     val database: DatabaseConfig,
@@ -28,28 +28,29 @@ data class AppConfig(
             val config = environment.config
             return AppConfig(
                 database =
-                    DatabaseConfig(
-                        url = config.property("database.url").getString(),
-                        user = config.property("database.user").getString(),
-                        password = config.property("database.password").getString(),
-                        maxPoolSize = config.property("database.maxPoolSize").getString().toInt(),
-                    ),
+                DatabaseConfig(
+                    url = config.property("database.url").getString(),
+                    user = config.property("database.user").getString(),
+                    password = config.property("database.password").getString(),
+                    maxPoolSize = config.property("database.maxPoolSize").getString().toInt(),
+                ),
                 cors =
-                    CorsConfig(
-                        allowedHosts =
-                            config.property("cors.allowedHosts").getString()
-                                .split(",")
-                                .map { it.trim() }
-                                .filter { it.isNotEmpty() },
-                    ),
+                CorsConfig(
+                    allowedHosts =
+                    config.property("cors.allowedHosts").getString()
+                        .split(",")
+                        .map { it.trim() }
+                        .filter { it.isNotEmpty() },
+                ),
                 jobs =
-                    JobsConfig(
-                        rssPollingIntervalMinutes = config.property("jobs.rssPollingIntervalMinutes").getString().toLong(),
-                        popularityAggregationIntervalMinutes =
-                            config.property(
-                                "jobs.popularityAggregationIntervalMinutes",
-                            ).getString().toLong(),
-                    ),
+                JobsConfig(
+                    rssPollingIntervalMinutes = config.property("jobs.rssPollingIntervalMinutes").getString()
+                        .toLong(),
+                    popularityAggregationIntervalMinutes =
+                    config.property(
+                        "jobs.popularityAggregationIntervalMinutes",
+                    ).getString().toLong(),
+                ),
             )
         }
     }

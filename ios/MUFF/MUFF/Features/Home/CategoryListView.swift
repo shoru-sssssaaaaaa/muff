@@ -1,13 +1,9 @@
 import SwiftUI
 
 struct CategoryListView: View {
-    @State private var sources: [SourceResponse] = []
+    @State private var categories: [String] = []
     @State private var isLoading = false
     @State private var error: String?
-
-    private var categories: [String] {
-        Array(Set(sources.map(\.defaultCategory))).sorted()
-    }
 
     var body: some View {
         Group {
@@ -15,7 +11,7 @@ struct CategoryListView: View {
                 LoadingView()
             } else if categories.isEmpty, let error {
                 ErrorView(error) {
-                    Task { await loadSources() }
+                    Task { await loadCategories() }
                 }
             } else {
                 List(categories, id: \.self) { category in
@@ -37,16 +33,16 @@ struct CategoryListView: View {
             CategoryFeedView(category: category)
         }
         .task {
-            if sources.isEmpty {
-                await loadSources()
+            if categories.isEmpty {
+                await loadCategories()
             }
         }
     }
 
-    private func loadSources() async {
+    private func loadCategories() async {
         isLoading = true
         do {
-            sources = try await APIClient().fetchSources()
+            categories = try await APIClient().fetchCategories()
         } catch {
             self.error = error.localizedDescription
         }

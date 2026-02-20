@@ -76,7 +76,6 @@ export default function SourcesPage() {
         name: source.name,
         rss_url: source.rss_url,
         site_url: source.site_url,
-        default_category: source.default_category,
         status: newStatus,
       },
     });
@@ -86,7 +85,6 @@ export default function SourcesPage() {
     name: string;
     rss_url: string;
     site_url: string;
-    default_category: string;
     status?: string;
   }) {
     if (editingSource) {
@@ -108,7 +106,6 @@ export default function SourcesPage() {
       name: s.name,
       rss_url: s.rss_url,
       site_url: s.site_url,
-      default_category: s.default_category,
       status: s.status,
     }));
     const blob = new Blob([JSON.stringify(exportData, null, 2)], {
@@ -141,7 +138,7 @@ export default function SourcesPage() {
       let errorCount = 0;
 
       for (const item of data) {
-        if (!item.name || !item.rss_url || !item.site_url || !item.default_category) {
+        if (!item.name || !item.rss_url || !item.site_url) {
           errorCount++;
           continue;
         }
@@ -150,7 +147,6 @@ export default function SourcesPage() {
             name: item.name,
             rss_url: item.rss_url,
             site_url: item.site_url,
-            default_category: item.default_category,
           });
           successCount++;
         } catch {

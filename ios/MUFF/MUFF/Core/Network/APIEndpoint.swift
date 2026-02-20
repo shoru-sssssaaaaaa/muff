@@ -2,6 +2,7 @@ import Foundation
 
 enum APIEndpoint {
     case catalogSources
+    case catalogCategories
     case feedNew(cursor: String?, limit: Int?)
     case feedPopular(limit: Int?)
     case feedCategory(category: String, cursor: String?, limit: Int?)
@@ -11,6 +12,8 @@ enum APIEndpoint {
         switch self {
         case .catalogSources:
             return "/v1/catalog/sources"
+        case .catalogCategories:
+            return "/v1/catalog/categories"
         case .feedNew:
             return "/v1/feed/new"
         case .feedPopular:

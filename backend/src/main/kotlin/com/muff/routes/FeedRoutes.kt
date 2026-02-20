@@ -3,9 +3,11 @@ package com.muff.routes
 import com.muff.model.ErrorResponse
 import com.muff.model.FeedCursor
 import com.muff.service.FeedService
-import io.ktor.http.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
+import io.ktor.server.routing.route
 
 fun Route.feedRoutes(feedService: FeedService) {
     route("/v1/feed") {
@@ -32,7 +34,10 @@ fun Route.feedRoutes(feedService: FeedService) {
         get("/category/{category}") {
             val category =
                 call.pathParameters["category"]
-                    ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorResponse("bad_request", "Missing category"))
+                    ?: return@get call.respond(
+                        HttpStatusCode.BadRequest,
+                        ErrorResponse("bad_request", "Missing category"),
+                    )
 
             val limit = (call.queryParameters["limit"]?.toIntOrNull() ?: 20).coerceIn(1, 50)
             val cursorParam = call.queryParameters["cursor"]

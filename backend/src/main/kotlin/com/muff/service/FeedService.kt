@@ -1,17 +1,37 @@
 package com.muff.service
 
 import com.muff.db.tables.Articles
+import com.muff.db.tables.CategoryRules
 import com.muff.db.tables.PopularityBuckets
 import com.muff.db.tables.Sources
-import com.muff.model.*
+import com.muff.model.ArticleResponse
+import com.muff.model.CategoryRuleResponse
+import com.muff.model.CreateCategoryRuleRequest
+import com.muff.model.CreateSourceRequest
+import com.muff.model.FeedCursor
+import com.muff.model.FeedResponse
+import com.muff.model.SourceResponse
+import com.muff.model.UpdateCategoryRuleRequest
+import com.muff.model.UpdateSourceRequest
 import kotlinx.datetime.Clock
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.andWhere
+import org.jetbrains.exposed.sql.count
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.innerJoin
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.or
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.update
 import java.util.UUID
 
-class FeedService {
+class FeedService(
+    private val categoryClassifier: CategoryClassifier,
+) {
     fun getSources(): List<SourceResponse> =
         transaction {
             Sources.selectAll()
@@ -23,7 +43,6 @@ class FeedService {
                         name = row[Sources.name],
                         rssUrl = row[Sources.rssUrl],
                         siteUrl = row[Sources.siteUrl],
-                        defaultCategory = row[Sources.defaultCategory],
                         status = row[Sources.status],
                     )
                 }
@@ -63,7 +82,7 @@ class FeedService {
             val query =
                 Articles.innerJoin(Sources, { Articles.sourceId }, { Sources.sourceId })
                     .selectAll()
-                    .andWhere { Articles.category eq category }
+                    .andWhere { Articles.ruleCategory eq category }
 
             if (cursor != null) {
                 query.andWhere {
@@ -112,7 +131,7 @@ class FeedService {
                         url = row[Articles.url],
                         publishedAt = row[Articles.publishedAt].toString(),
                         thumbnailUrl = row[Articles.thumbnailUrl],
-                        category = row[Articles.category],
+                        category = row[Articles.ruleCategory] ?: "ネタ・その他",
                         viewCount = row[PopularityBuckets.openCount],
                     )
                 }.distinctBy { it.title }
@@ -138,7 +157,7 @@ class FeedService {
                 it[name] = req.name
                 it[rssUrl] = req.rssUrl
                 it[siteUrl] = req.siteUrl
-                it[defaultCategory] = req.defaultCategory
+                it[defaultCategory] = ""
                 it[status] = "active"
                 it[createdAt] = now
             }
@@ -147,7 +166,6 @@ class FeedService {
                 name = req.name,
                 rssUrl = req.rssUrl,
                 siteUrl = req.siteUrl,
-                defaultCategory = req.defaultCategory,
                 status = "active",
             )
         }
@@ -163,7 +181,6 @@ class FeedService {
                     it[name] = req.name
                     it[rssUrl] = req.rssUrl
                     it[siteUrl] = req.siteUrl
-                    it[defaultCategory] = req.defaultCategory
                     it[status] = req.status
                 }
             if (updated == 0) return@transaction null
@@ -186,7 +203,7 @@ class FeedService {
                 query.andWhere { Articles.sourceId eq uuid }
             }
             if (category != null) {
-                query.andWhere { Articles.category eq category }
+                query.andWhere { Articles.ruleCategory eq category }
             }
             if (cursor != null) {
                 query.andWhere {
@@ -211,13 +228,98 @@ class FeedService {
             Sources.deleteWhere { sourceId eq uuid } > 0
         }
 
+    // Category Rules CRUD
+
+    fun getCategoryRules(): List<CategoryRuleResponse> =
+        transaction {
+            val counts =
+                Articles
+                    .select(Articles.ruleCategory, Articles.ruleCategory.count())
+                    .groupBy(Articles.ruleCategory)
+                    .associate { it[Articles.ruleCategory] to it[Articles.ruleCategory.count()] }
+
+            CategoryRules.selectAll()
+                .orderBy(CategoryRules.sortOrder to SortOrder.ASC)
+                .map { it.toCategoryRuleResponse(counts[it[CategoryRules.name]] ?: 0L) }
+        }
+
+    fun createCategoryRule(req: CreateCategoryRuleRequest): CategoryRuleResponse =
+        transaction {
+            val id = UUID.randomUUID()
+            val now = Clock.System.now()
+            if (req.isDefault) {
+                CategoryRules.update({ CategoryRules.isDefault eq true }) {
+                    it[isDefault] = false
+                }
+            }
+            CategoryRules.insert {
+                it[categoryRuleId] = id
+                it[name] = req.name
+                it[keywords] = req.keywords.joinToString(",")
+                it[isDefault] = req.isDefault
+                it[sortOrder] = req.sortOrder
+                it[createdAt] = now
+            }
+            categoryClassifier.reloadRules()
+            CategoryRuleResponse(
+                categoryRuleId = id.toString(),
+                name = req.name,
+                keywords = req.keywords,
+                isDefault = req.isDefault,
+                sortOrder = req.sortOrder,
+            )
+        }
+
+    fun updateCategoryRule(
+        id: String,
+        req: UpdateCategoryRuleRequest,
+    ): CategoryRuleResponse? =
+        transaction {
+            val uuid = UUID.fromString(id)
+            if (req.isDefault) {
+                CategoryRules.update({ CategoryRules.isDefault eq true }) {
+                    it[isDefault] = false
+                }
+            }
+            val updated =
+                CategoryRules.update({ CategoryRules.categoryRuleId eq uuid }) {
+                    it[name] = req.name
+                    it[keywords] = req.keywords.joinToString(",")
+                    it[isDefault] = req.isDefault
+                    it[sortOrder] = req.sortOrder
+                }
+            if (updated == 0) return@transaction null
+            categoryClassifier.reloadRules()
+            CategoryRules.selectAll()
+                .where { CategoryRules.categoryRuleId eq uuid }
+                .firstOrNull()
+                ?.toCategoryRuleResponse()
+        }
+
+    fun deleteCategoryRule(id: String): Boolean =
+        transaction {
+            val uuid = UUID.fromString(id)
+            val deleted = CategoryRules.deleteWhere { categoryRuleId eq uuid } > 0
+            if (deleted) categoryClassifier.reloadRules()
+            deleted
+        }
+
+    private fun ResultRow.toCategoryRuleResponse(articleCount: Long = 0L) =
+        CategoryRuleResponse(
+            categoryRuleId = this[CategoryRules.categoryRuleId].toString(),
+            name = this[CategoryRules.name],
+            keywords = this[CategoryRules.keywords].split(",").map { it.trim() }.filter { it.isNotEmpty() },
+            isDefault = this[CategoryRules.isDefault],
+            sortOrder = this[CategoryRules.sortOrder],
+            articleCount = articleCount,
+        )
+
     private fun ResultRow.toSourceResponse() =
         SourceResponse(
             sourceId = this[Sources.sourceId].toString(),
             name = this[Sources.name],
             rssUrl = this[Sources.rssUrl],
             siteUrl = this[Sources.siteUrl],
-            defaultCategory = this[Sources.defaultCategory],
             status = this[Sources.status],
             consecutiveFailures = this[Sources.consecutiveFailures],
             lastFetchAt = this[Sources.lastFetchAt]?.toString(),
@@ -239,7 +341,7 @@ class FeedService {
                     url = row[Articles.url],
                     publishedAt = row[Articles.publishedAt].toString(),
                     thumbnailUrl = row[Articles.thumbnailUrl],
-                    category = row[Articles.category],
+                    category = row[Articles.ruleCategory] ?: "ネタ・その他",
                 )
             }.distinctBy { it.title }
 

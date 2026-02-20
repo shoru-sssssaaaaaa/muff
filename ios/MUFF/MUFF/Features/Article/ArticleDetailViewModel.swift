@@ -9,6 +9,7 @@ final class ArticleDetailViewModel {
     var isReaderMode: Bool
     var readerHTML: String?
     var readerFailed = false
+    var bookmarked = false
 
     private let apiClient = APIClient()
 
@@ -17,6 +18,7 @@ final class ArticleDetailViewModel {
         self.articles = articles
         self.currentIndex = currentIndex
         self.isReaderMode = AppSettings.shared.readerModeEnabled
+        self.bookmarked = (try? AppDatabase.shared.isBookmarked(url: article.url)) ?? false
     }
 
     func markAsRead() {
@@ -49,6 +51,7 @@ final class ArticleDetailViewModel {
         currentArticle = articles[currentIndex]
         readerHTML = nil
         readerFailed = false
+        refreshBookmarkState()
         markAsRead()
         Task { await sendOpenEvent() }
     }
@@ -59,11 +62,12 @@ final class ArticleDetailViewModel {
         currentArticle = articles[currentIndex]
         readerHTML = nil
         readerFailed = false
+        refreshBookmarkState()
         markAsRead()
         Task { await sendOpenEvent() }
     }
 
-    func isBookmarked() -> Bool {
-        (try? AppDatabase.shared.isBookmarked(url: currentArticle.url)) ?? false
+    func refreshBookmarkState() {
+        bookmarked = (try? AppDatabase.shared.isBookmarked(url: currentArticle.url)) ?? false
     }
 }
