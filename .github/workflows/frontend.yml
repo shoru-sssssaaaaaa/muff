@@ -38,20 +38,3 @@ jobs:
 
       - name: Build
         run: npm run build
-
-  docker-build:
-    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
-    needs: lint-and-build
-    runs-on: ubuntu-latest
-    environment: development
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build Docker image
-        working-directory: frontend
-        run: |
-          docker build \
-            --build-arg BACKEND_URL=${{ vars.BACKEND_URL }} \
-            -t mttm-frontend:develop \
-            .
