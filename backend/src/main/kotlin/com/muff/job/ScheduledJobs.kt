@@ -1,6 +1,7 @@
 package com.muff.job
 
 import com.muff.service.AppAttestService
+import com.muff.service.FeedService
 import com.muff.service.PopularityService
 import com.muff.service.RssPollingService
 import kotlinx.coroutines.CoroutineScope
@@ -18,6 +19,7 @@ class ScheduledJobs(
     private val rssPollingService: RssPollingService,
     private val popularityService: PopularityService,
     private val attestService: AppAttestService,
+    private val feedService: FeedService,
     private val rssIntervalMinutes: Long,
     private val popularityIntervalMinutes: Long,
 ) {
@@ -63,6 +65,17 @@ class ScheduledJobs(
                     }
                 } catch (e: Exception) {
                     logger.error("Attest challenge cleanup job failed", e)
+                }
+            }
+        }
+
+        scope.launch {
+            while (isActive) {
+                delay(24.hours)
+                try {
+                    feedService.cleanupOldArticles(48.hours)
+                } catch (e: Exception) {
+                    logger.error("Article cleanup job failed", e)
                 }
             }
         }
