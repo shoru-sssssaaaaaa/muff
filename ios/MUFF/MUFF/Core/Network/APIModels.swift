@@ -52,3 +52,19 @@ struct ErrorResponse: Codable, Sendable {
 struct StatusResponse: Codable, Sendable {
     let status: String
 }
+
+// MARK: - App Attest
+
+struct AttestChallengeResponse: Codable, Sendable {
+    let challenge: String
+}
+
+struct AttestVerifyRequest: Codable, Sendable {
+    let keyId: String
+    let attestation: String
+    let challenge: String
+}
+
+struct AttestVerifyResponse: Codable, Sendable {
+    let verified: Bool
+}

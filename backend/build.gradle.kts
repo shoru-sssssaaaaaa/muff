@@ -54,6 +54,9 @@ dependencies {
     // OpenAPI / Swagger
     implementation("io.swagger.core.v3:swagger-core-jakarta:$swaggerVersion")
 
+    // CBOR parsing for App Attest objects
+    implementation("com.upokecenter:cbor:5.0.0-alpha2")
+
     // RSS Parser
     implementation("com.rometools:rome:$romeVersion")
 

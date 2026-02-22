@@ -1,9 +1,11 @@
 package com.muff.plugins
 
 import com.muff.routes.adminRoutes
+import com.muff.routes.attestRoutes
 import com.muff.routes.catalogRoutes
 import com.muff.routes.eventRoutes
 import com.muff.routes.feedRoutes
+import com.muff.service.AppAttestService
 import com.muff.service.CategoryClassifier
 import com.muff.service.FeedService
 import com.muff.service.RssPollingService
@@ -17,8 +19,9 @@ import io.ktor.server.routing.routing
 
 fun Application.configureRouting(
     feedService: FeedService,
-    categoryClassifier: CategoryClassifier,
-    rssPollingService: RssPollingService,
+    categoryClassifier: CategoryClassifier? = null,
+    rssPollingService: RssPollingService? = null,
+    attestService: AppAttestService? = null,
 ) {
     routing {
         get("/health") {
@@ -26,10 +29,15 @@ fun Application.configureRouting(
         }
 
         swaggerUI(path = "swagger", swaggerFile = "openapi/documentation.yaml")
+        if (attestService != null) {
+            attestRoutes(attestService)
+        }
         catalogRoutes(feedService)
         feedRoutes(feedService)
         eventRoutes()
-        adminRoutes(feedService, categoryClassifier, rssPollingService)
+        if (categoryClassifier != null && rssPollingService != null) {
+            adminRoutes(feedService, categoryClassifier, rssPollingService)
+        }
 
         // Serve admin UI static files
         staticResources("/admin-ui", "admin")

@@ -45,7 +45,7 @@ final class APIClient: Sendable {
         return encoder
     }
 
-    private func buildRequest(endpoint: APIEndpoint, body: Data? = nil) throws -> URLRequest {
+    private func buildRequest(endpoint: APIEndpoint, body: Data? = nil, skipAttest: Bool = false) async throws -> URLRequest {
         var components = URLComponents(string: baseURL + endpoint.path)
         let queryItems = endpoint.queryItems
         if !queryItems.isEmpty {
@@ -59,6 +59,12 @@ final class APIClient: Sendable {
         if let body {
             request.httpBody = body
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        }
+        if !skipAttest {
+            let attestHeaders = await AppAttestManager.shared.assertionHeaders(for: request)
+            for (key, value) in attestHeaders {
+                request.setValue(value, forHTTPHeaderField: key)
+            }
         }
         return request
     }
@@ -91,33 +97,46 @@ final class APIClient: Sendable {
     // MARK: - Public API
 
     func fetchSources() async throws -> [SourceResponse] {
-        let request = try buildRequest(endpoint: .catalogSources)
+        let request = try await buildRequest(endpoint: .catalogSources)
         return try await perform(request)
     }
 
     func fetchCategories() async throws -> [String] {
-        let request = try buildRequest(endpoint: .catalogCategories)
+        let request = try await buildRequest(endpoint: .catalogCategories)
         return try await perform(request)
     }
 
     func fetchNewFeed(cursor: String? = nil, limit: Int? = nil) async throws -> FeedResponse {
-        let request = try buildRequest(endpoint: .feedNew(cursor: cursor, limit: limit))
+        let request = try await buildRequest(endpoint: .feedNew(cursor: cursor, limit: limit))
         return try await perform(request)
     }
 
     func fetchPopularFeed(limit: Int? = nil) async throws -> FeedResponse {
-        let request = try buildRequest(endpoint: .feedPopular(limit: limit))
+        let request = try await buildRequest(endpoint: .feedPopular(limit: limit))
         return try await perform(request)
     }
 
     func fetchCategoryFeed(category: String, cursor: String? = nil, limit: Int? = nil) async throws -> FeedResponse {
-        let request = try buildRequest(endpoint: .feedCategory(category: category, cursor: cursor, limit: limit))
+        let request = try await buildRequest(endpoint: .feedCategory(category: category, cursor: cursor, limit: limit))
         return try await perform(request)
     }
 
     func postOpenEvent(_ event: OpenEventRequest) async throws {
         let body = try encoder.encode(event)
-        let request = try buildRequest(endpoint: .eventsOpen, body: body)
+        let request = try await buildRequest(endpoint: .eventsOpen, body: body)
         let _: StatusResponse = try await perform(request)
+    }
+
+    // MARK: - App Attest
+
+    func fetchAttestChallenge() async throws -> AttestChallengeResponse {
+        let request = try await buildRequest(endpoint: .attestChallenge, skipAttest: true)
+        return try await perform(request)
+    }
+
+    func verifyAttestation(_ verifyRequest: AttestVerifyRequest) async throws -> AttestVerifyResponse {
+        let body = try encoder.encode(verifyRequest)
+        let request = try await buildRequest(endpoint: .attestVerify, body: body, skipAttest: true)
+        return try await perform(request)
     }
 }

@@ -77,6 +77,25 @@ data class UpdateCategoryRuleRequest(
     @SerialName("sort_order") val sortOrder: Int = 0,
 )
 
+// App Attest
+
+@Serializable
+data class AttestChallengeResponse(
+    val challenge: String,
+)
+
+@Serializable
+data class AttestVerifyRequest(
+    @SerialName("key_id") val keyId: String,
+    val attestation: String,
+    val challenge: String,
+)
+
+@Serializable
+data class AttestVerifyResponse(
+    val verified: Boolean,
+)
+
 // Admin DTOs
 
 @Serializable
