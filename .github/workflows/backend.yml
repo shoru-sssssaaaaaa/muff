@@ -50,3 +50,27 @@ jobs:
 
       - name: Test
         run: ./gradlew test
+
+  docker-build:
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        working-directory: backend
+        run: |
+          docker build \
+            --build-arg PORT=${{ vars.PORT }} \
+            --build-arg DATABASE_URL=${{ vars.DATABASE_URL }} \
+            --build-arg DATABASE_USER=${{ secrets.DATABASE_USER }} \
+            --build-arg DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }} \
+            --build-arg DATABASE_MAX_POOL_SIZE=${{ vars.DATABASE_MAX_POOL_SIZE }} \
+            --build-arg CORS_ALLOWED_HOSTS=${{ vars.CORS_ALLOWED_HOSTS }} \
+            --build-arg RSS_POLLING_INTERVAL_MINUTES=${{ vars.RSS_POLLING_INTERVAL_MINUTES }} \
+            --build-arg POPULARITY_AGGREGATION_INTERVAL_MINUTES=${{ vars.POPULARITY_AGGREGATION_INTERVAL_MINUTES }} \
+            -t mttm-backend:develop \
+            .
