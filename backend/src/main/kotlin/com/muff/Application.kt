@@ -66,6 +66,7 @@ fun Application.module() {
             rssPollingService = rssPollingService,
             popularityService = popularityService,
             attestService = attestService,
+            feedService = feedService,
             rssIntervalMinutes = appConfig.jobs.rssPollingIntervalMinutes,
             popularityIntervalMinutes = appConfig.jobs.popularityAggregationIntervalMinutes,
         )

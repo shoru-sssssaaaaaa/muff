@@ -17,6 +17,8 @@ import kotlinx.datetime.Clock
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inSubQuery
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.andWhere
 import org.jetbrains.exposed.sql.count
@@ -27,11 +29,37 @@ import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
+import org.slf4j.LoggerFactory
 import java.util.UUID
+import kotlin.time.Duration
 
 class FeedService(
     private val categoryClassifier: CategoryClassifier,
 ) {
+    private val logger = LoggerFactory.getLogger(FeedService::class.java)
+
+    fun cleanupOldArticles(maxAge: Duration): Int =
+        transaction {
+            val cutoff = Clock.System.now().minus(maxAge)
+            val oldArticleIds = Articles
+                .select(Articles.articleId)
+                .where { Articles.publishedAt less cutoff }
+
+            val deletedBuckets = PopularityBuckets.deleteWhere {
+                PopularityBuckets.articleId inSubQuery oldArticleIds
+            }
+            val deletedArticles = Articles.deleteWhere {
+                Articles.publishedAt less cutoff
+            }
+            logger.info(
+                "Cleaned up {} old articles and {} popularity buckets (cutoff={})",
+                deletedArticles,
+                deletedBuckets,
+                cutoff,
+            )
+            deletedArticles
+        }
+
     fun getSources(): List<SourceResponse> =
         transaction {
             Sources.selectAll()

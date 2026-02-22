@@ -21,6 +21,9 @@ RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 COPY --from=build /app/public ./public
 COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
+ARG BACKEND_URL
+ENV BACKEND_URL=${BACKEND_URL}
+
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
