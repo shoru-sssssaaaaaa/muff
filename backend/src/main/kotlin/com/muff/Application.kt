@@ -4,10 +4,12 @@ import com.muff.config.AppConfig
 import com.muff.db.DatabaseFactory
 import com.muff.db.tables.CategoryRules
 import com.muff.job.ScheduledJobs
+import com.muff.plugins.configureAppAttest
 import com.muff.plugins.configureCors
 import com.muff.plugins.configureRouting
 import com.muff.plugins.configureSerialization
 import com.muff.plugins.configureStatusPages
+import com.muff.service.AppAttestService
 import com.muff.service.CategoryClassifier
 import com.muff.service.FeedService
 import com.muff.service.PopularityService
@@ -43,6 +45,7 @@ fun Application.module() {
     val feedService = FeedService(categoryClassifier)
     val rssPollingService = RssPollingService(categoryClassifier)
     val popularityService = PopularityService()
+    val attestService = AppAttestService(appConfig.appAttest)
 
     // Plugins
     install(CallLogging) {
@@ -51,7 +54,8 @@ fun Application.module() {
     configureCors(appConfig.cors)
     configureSerialization()
     configureStatusPages()
-    configureRouting(feedService, categoryClassifier, rssPollingService)
+    configureAppAttest(appConfig.appAttest, attestService)
+    configureRouting(feedService, categoryClassifier, rssPollingService, attestService)
 
     // Reclassify existing articles with latest rules
     rssPollingService.reclassifyAll()
@@ -61,6 +65,7 @@ fun Application.module() {
         ScheduledJobs(
             rssPollingService = rssPollingService,
             popularityService = popularityService,
+            attestService = attestService,
             rssIntervalMinutes = appConfig.jobs.rssPollingIntervalMinutes,
             popularityIntervalMinutes = appConfig.jobs.popularityAggregationIntervalMinutes,
         )

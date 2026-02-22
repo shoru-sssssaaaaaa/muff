@@ -14,6 +14,11 @@ struct MUFFApp: App {
         if AppSettings.shared.adBlockEnabled {
             _ = AdBlocker.shared
         }
+
+        // Start App Attest in background
+        Task {
+            try? await AppAttestManager.shared.ensureAttested()
+        }
     }
 
     var body: some Scene {

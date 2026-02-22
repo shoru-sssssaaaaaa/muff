@@ -1,6 +1,9 @@
 package com.muff
 
 import com.muff.db.tables.Articles
+import com.muff.db.tables.AttestChallenges
+import com.muff.db.tables.AttestedKeys
+import com.muff.db.tables.CategoryRules
 import com.muff.db.tables.OpenEvents
 import com.muff.db.tables.PopularityBuckets
 import com.muff.db.tables.Sources
@@ -15,14 +18,14 @@ object TestDatabaseFactory {
             driver = "org.h2.Driver",
         )
         transaction {
-            SchemaUtils.create(Sources, Articles, OpenEvents, PopularityBuckets)
+            SchemaUtils.create(Sources, Articles, OpenEvents, PopularityBuckets, CategoryRules, AttestChallenges, AttestedKeys)
         }
     }
 
     fun cleanup() {
         transaction {
-            SchemaUtils.drop(PopularityBuckets, OpenEvents, Articles, Sources)
-            SchemaUtils.create(Sources, Articles, OpenEvents, PopularityBuckets)
+            SchemaUtils.drop(PopularityBuckets, OpenEvents, Articles, Sources, CategoryRules, AttestChallenges, AttestedKeys)
+            SchemaUtils.create(Sources, Articles, OpenEvents, PopularityBuckets, CategoryRules, AttestChallenges, AttestedKeys)
         }
     }
 }

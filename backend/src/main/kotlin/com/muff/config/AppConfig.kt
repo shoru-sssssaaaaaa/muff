@@ -6,6 +6,7 @@ data class AppConfig(
     val database: DatabaseConfig,
     val cors: CorsConfig,
     val jobs: JobsConfig,
+    val appAttest: AppAttestConfig,
 ) {
     data class DatabaseConfig(
         val url: String,
@@ -21,6 +22,14 @@ data class AppConfig(
     data class JobsConfig(
         val rssPollingIntervalMinutes: Long,
         val popularityAggregationIntervalMinutes: Long,
+    )
+
+    data class AppAttestConfig(
+        val teamId: String,
+        val bundleId: String,
+        val enforcePost: Boolean,
+        val enforceAll: Boolean,
+        val challengeTtlSeconds: Long,
     )
 
     companion object {
@@ -50,6 +59,14 @@ data class AppConfig(
                     config.property(
                         "jobs.popularityAggregationIntervalMinutes",
                     ).getString().toLong(),
+                ),
+                appAttest =
+                AppAttestConfig(
+                    teamId = config.property("appAttest.teamId").getString(),
+                    bundleId = config.property("appAttest.bundleId").getString(),
+                    enforcePost = config.property("appAttest.enforcePost").getString().toBoolean(),
+                    enforceAll = config.property("appAttest.enforceAll").getString().toBoolean(),
+                    challengeTtlSeconds = config.property("appAttest.challengeTtlSeconds").getString().toLong(),
                 ),
             )
         }

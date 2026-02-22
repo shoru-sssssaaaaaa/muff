@@ -6,6 +6,7 @@ import com.muff.model.OpenEventRequest
 import com.muff.plugins.configureRouting
 import com.muff.plugins.configureSerialization
 import com.muff.plugins.configureStatusPages
+import com.muff.service.CategoryClassifier
 import com.muff.service.FeedService
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
@@ -32,7 +33,7 @@ class EventRoutesTest {
             application {
                 configureSerialization()
                 configureStatusPages()
-                configureRouting(FeedService())
+                configureRouting(FeedService(CategoryClassifier()))
             }
 
             val client =
@@ -66,7 +67,7 @@ class EventRoutesTest {
             application {
                 configureSerialization()
                 configureStatusPages()
-                configureRouting(FeedService())
+                configureRouting(FeedService(CategoryClassifier()))
             }
 
             val client =
@@ -97,7 +98,7 @@ class EventRoutesTest {
             application {
                 configureSerialization()
                 configureStatusPages()
-                configureRouting(FeedService())
+                configureRouting(FeedService(CategoryClassifier()))
             }
 
             val client =

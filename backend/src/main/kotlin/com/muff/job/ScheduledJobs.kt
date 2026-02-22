@@ -1,5 +1,6 @@
 package com.muff.job
 
+import com.muff.service.AppAttestService
 import com.muff.service.PopularityService
 import com.muff.service.RssPollingService
 import kotlinx.coroutines.CoroutineScope
@@ -10,11 +11,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
 class ScheduledJobs(
     private val rssPollingService: RssPollingService,
     private val popularityService: PopularityService,
+    private val attestService: AppAttestService,
     private val rssIntervalMinutes: Long,
     private val popularityIntervalMinutes: Long,
 ) {
@@ -46,6 +49,20 @@ class ScheduledJobs(
                     popularityService.aggregate()
                 } catch (e: Exception) {
                     logger.error("Popularity aggregation job failed", e)
+                }
+            }
+        }
+
+        scope.launch {
+            while (isActive) {
+                delay(1.hours)
+                try {
+                    val deleted = attestService.cleanupExpiredChallenges()
+                    if (deleted > 0) {
+                        logger.info("Cleaned up {} expired attest challenges", deleted)
+                    }
+                } catch (e: Exception) {
+                    logger.error("Attest challenge cleanup job failed", e)
                 }
             }
         }
