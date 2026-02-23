@@ -1,34 +1,21 @@
 package com.muff.db
 
 import com.muff.config.AppConfig
-import com.muff.db.tables.Articles
-import com.muff.db.tables.AttestChallenges
-import com.muff.db.tables.AttestedKeys
-import com.muff.db.tables.CategoryRules
-import com.muff.db.tables.OpenEvents
-import com.muff.db.tables.PopularityBuckets
-import com.muff.db.tables.Sources
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.transactions.transaction
 
 object DatabaseFactory {
     fun init(config: AppConfig.DatabaseConfig) {
         val dataSource = hikari(config)
+        Flyway.configure()
+            .dataSource(dataSource)
+            .locations("classpath:db/migration")
+            .baselineOnMigrate(true)
+            .load()
+            .migrate()
         Database.connect(dataSource)
-        transaction {
-            SchemaUtils.createMissingTablesAndColumns(
-                Sources,
-                Articles,
-                OpenEvents,
-                PopularityBuckets,
-                CategoryRules,
-                AttestedKeys,
-                AttestChallenges,
-            )
-        }
     }
 
     private fun hikari(config: AppConfig.DatabaseConfig): HikariDataSource {
