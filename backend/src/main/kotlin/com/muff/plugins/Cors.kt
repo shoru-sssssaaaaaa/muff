@@ -10,7 +10,14 @@ import io.ktor.server.plugins.cors.routing.CORS
 fun Application.configureCors(corsConfig: AppConfig.CorsConfig) {
     install(CORS) {
         corsConfig.allowedHosts.forEach { host ->
-            allowHost(host)
+            when {
+                host.startsWith("https://") ->
+                    allowHost(host.removePrefix("https://"), schemes = listOf("https"))
+                host.startsWith("http://") ->
+                    allowHost(host.removePrefix("http://"), schemes = listOf("http"))
+                else ->
+                    allowHost(host, schemes = listOf("http", "https"))
+            }
         }
         allowHeader(HttpHeaders.ContentType)
         allowMethod(HttpMethod.Get)
