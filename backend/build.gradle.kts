@@ -3,6 +3,7 @@ val ktorVersion = "3.0.3"
 val exposedVersion = "0.57.0"
 val hikariVersion = "6.2.1"
 val postgresVersion = "42.7.4"
+val flywayVersion = "10.21.0"
 val logbackVersion = "1.5.12"
 val kotlinxDatetimeVersion = "0.6.1"
 val romeVersion = "2.1.0"
@@ -48,6 +49,10 @@ dependencies {
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("com.google.cloud.sql:postgres-socket-factory:1.21.0")
+
+    // Flyway
+    implementation("org.flywaydb:flyway-core:$flywayVersion")
+    implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
 
     // Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:$kotlinxDatetimeVersion")
