@@ -3,7 +3,7 @@ val ktorVersion = "3.0.3"
 val exposedVersion = "0.57.0"
 val hikariVersion = "6.2.1"
 val postgresVersion = "42.7.4"
-val flywayVersion = "10.21.0"
+val flywayVersion = "9.22.3"
 val logbackVersion = "1.5.12"
 val kotlinxDatetimeVersion = "0.6.1"
 val romeVersion = "2.1.0"
@@ -52,7 +52,6 @@ dependencies {
 
     // Flyway
     implementation("org.flywaydb:flyway-core:$flywayVersion")
-    implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
 
     // Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:$kotlinxDatetimeVersion")
