@@ -47,6 +47,7 @@ dependencies {
     // Database
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
+    implementation("com.google.cloud.sql:postgres-socket-factory:1.21.0")
 
     // Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:$kotlinxDatetimeVersion")

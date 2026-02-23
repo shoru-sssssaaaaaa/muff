@@ -63,4 +63,5 @@ jobs:
             --image=${{ env.IMAGE }}:${{ github.sha }} \
             --region=asia-northeast1 \
             --platform=managed \
-            --allow-unauthenticated
+            --allow-unauthenticated \
+            --add-cloudsql-instances=strange-victory-451001-e8:asia-northeast1:muff-trial-non-prod
