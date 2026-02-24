@@ -1,0 +1,3 @@
+// Local development
+BACKEND_ENV = LOCAL
+PRODUCT_BUNDLE_IDENTIFIER = com.muff.local
