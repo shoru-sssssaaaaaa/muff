@@ -1,0 +1,3 @@
+// Production
+BACKEND_ENV = PROD
+PRODUCT_BUNDLE_IDENTIFIER = com.muff.prod

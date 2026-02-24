@@ -6,6 +6,11 @@ options:
   xcodeVersion: "16.0"
   generateEmptyDirectories: true
 
+configs:
+  Debug: debug
+  NonProd: debug
+  Release: release
+
 settings:
   base:
     SWIFT_VERSION: "6.0"
@@ -34,9 +39,18 @@ targets:
     settings:
       base:
         INFOPLIST_FILE: MUFF/Resources/Info.plist
-        PRODUCT_BUNDLE_IDENTIFIER: com.muff.app
         CODE_SIGN_STYLE: Automatic
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+      configs:
+        Debug:
+          BACKEND_ENV: LOCAL
+          PRODUCT_BUNDLE_IDENTIFIER: com.muff.local
+        NonProd:
+          BACKEND_ENV: NON_PROD
+          PRODUCT_BUNDLE_IDENTIFIER: com.muff.non-prod
+        Release:
+          BACKEND_ENV: PROD
+          PRODUCT_BUNDLE_IDENTIFIER: com.muff.prod
     dependencies:
       - package: GRDB
       - package: Nuke
