@@ -61,7 +61,7 @@ class ScheduledJobs(
                 try {
                     val deleted = attestService.cleanupExpiredChallenges()
                     if (deleted > 0) {
-                        logger.info("Cleaned up {} expired attest challenges", deleted)
+                        logger.debug("Cleaned up {} expired attest challenges", deleted)
                     }
                 } catch (e: Exception) {
                     logger.error("Attest challenge cleanup job failed", e)

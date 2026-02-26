@@ -16,13 +16,10 @@ import com.muff.service.PopularityService
 import com.muff.service.RssPollingService
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationStopped
-import io.ktor.server.application.install
-import io.ktor.server.plugins.calllogging.CallLogging
 import kotlinx.datetime.Clock
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.slf4j.event.Level
 import java.util.UUID
 
 fun main(args: Array<String>) {
@@ -48,9 +45,6 @@ fun Application.module() {
     val attestService = AppAttestService(appConfig.appAttest)
 
     // Plugins
-    install(CallLogging) {
-        level = Level.INFO
-    }
     configureCors(appConfig.cors)
     configureSerialization()
     configureStatusPages()
