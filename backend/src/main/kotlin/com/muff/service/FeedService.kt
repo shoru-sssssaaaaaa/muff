@@ -51,7 +51,7 @@ class FeedService(
             val deletedArticles = Articles.deleteWhere {
                 Articles.publishedAt less cutoff
             }
-            logger.info(
+            logger.debug(
                 "Cleaned up {} old articles and {} popularity buckets (cutoff={})",
                 deletedArticles,
                 deletedBuckets,

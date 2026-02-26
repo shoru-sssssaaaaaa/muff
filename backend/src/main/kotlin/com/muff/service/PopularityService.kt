@@ -23,7 +23,7 @@ class PopularityService {
         val bucketStart = alignToBucket(now)
         val windowStart = bucketStart - 30.minutes
 
-        logger.info("Aggregating popularity for bucket: {} (window: {} to {})", bucketStart, windowStart, bucketStart)
+        logger.debug("Aggregating popularity for bucket: {} (window: {} to {})", bucketStart, windowStart, bucketStart)
 
         transaction {
             // Count open events per article_url in the 30-minute window
@@ -38,7 +38,7 @@ class PopularityService {
                     .groupBy(Articles.articleId)
                     .toList()
 
-            logger.info("Found {} articles with opens in window", counts.size)
+            logger.debug("Found {} articles with opens in window", counts.size)
 
             for (row in counts) {
                 val articleId = row[Articles.articleId]
@@ -71,7 +71,7 @@ class PopularityService {
             }
         }
 
-        logger.info("Popularity aggregation complete for bucket: {}", bucketStart)
+        logger.debug("Popularity aggregation complete for bucket: {}", bucketStart)
     }
 
     /** Align to the nearest 30-minute boundary (floor) */

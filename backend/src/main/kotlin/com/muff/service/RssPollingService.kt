@@ -33,7 +33,7 @@ class RssPollingService(
                     updated++
                 }
             }
-            logger.info("Reclassified {} articles", updated)
+            logger.debug("Reclassified {} articles", updated)
         }
     }
 
@@ -52,7 +52,7 @@ class RssPollingService(
                     }
             }
 
-        logger.info("Polling {} active sources", sources.size)
+        logger.debug("Polling {} active sources", sources.size)
 
         for (source in sources) {
             try {
@@ -117,7 +117,7 @@ class RssPollingService(
             }
         }
 
-        logger.info("Polled source: {} — {} entries", source.name, feed.entries.size)
+        logger.debug("Polled source: {} — {} entries", source.name, feed.entries.size)
     }
 
     private fun normalizeTitle(title: String): String {

@@ -41,7 +41,8 @@ struct FollowFeedView: View {
                         selectedIndex = index
                         selectedArticle = article
                     },
-                    onRefresh: { await viewModel.refresh() }
+                    onRefresh: { await viewModel.refresh() },
+                    scrollToTopTrigger: refreshTrigger
                 )
             }
         }

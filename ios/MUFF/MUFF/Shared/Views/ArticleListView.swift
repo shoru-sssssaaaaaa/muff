@@ -8,13 +8,21 @@ struct ArticleListView: View {
     let onLoadMore: () -> Void
     let onArticleTap: (ArticleResponse, Int) -> Void
     let onRefresh: () async -> Void
+    var scrollToTopTrigger: Int = 0
 
     @State private var readURLs: Set<String> = []
     @State private var muteRules: [MuteRule] = []
     @State private var ngWords: [NGWord] = []
 
     var body: some View {
+        ScrollViewReader { proxy in
         List {
+            Color.clear
+                .frame(height: 0)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets())
+                .id("articleListTop")
+
             ForEach(Array(filteredArticles.enumerated()), id: \.element.id) { index, article in
                 let isRead = readURLs.contains(article.url)
                 let ngMatch = matchingNGWord(for: article)
@@ -67,6 +75,12 @@ struct ArticleListView: View {
                 readURLs = (try? AppDatabase.shared.allReadURLs()) ?? []
             }
         }
+        .onChange(of: scrollToTopTrigger) {
+            withAnimation {
+                proxy.scrollTo("articleListTop", anchor: .top)
+            }
+        }
+        } // ScrollViewReader
     }
 
     private var filteredArticles: [ArticleResponse] {
