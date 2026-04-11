@@ -127,6 +127,11 @@ final class APIClient: Sendable {
         return try await perform(request)
     }
 
+    func refreshFeed() async throws {
+        let request = try await buildRequest(endpoint: .feedRefresh)
+        let _: StatusResponse = try await perform(request)
+    }
+
     func postOpenEvent(_ event: OpenEventRequest) async throws {
         let body = try encoder.encode(event)
         let request = try await buildRequest(endpoint: .eventsOpen, body: body)

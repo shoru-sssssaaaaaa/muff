@@ -6,6 +6,7 @@ enum APIEndpoint {
     case feedNew(cursor: String?, limit: Int?)
     case feedPopular(limit: Int?)
     case feedCategory(category: String, cursor: String?, limit: Int?)
+    case feedRefresh
     case eventsOpen
     case attestChallenge
     case attestVerify
@@ -22,6 +23,8 @@ enum APIEndpoint {
             return "/v1/feed/popular"
         case .feedCategory(let category, _, _):
             return "/v1/feed/category/\(category)"
+        case .feedRefresh:
+            return "/v1/feed/refresh"
         case .eventsOpen:
             return "/v1/events/open"
         case .attestChallenge:
@@ -33,7 +36,7 @@ enum APIEndpoint {
 
     var method: String {
         switch self {
-        case .eventsOpen, .attestVerify:
+        case .feedRefresh, .eventsOpen, .attestVerify:
             return "POST"
         default:
             return "GET"

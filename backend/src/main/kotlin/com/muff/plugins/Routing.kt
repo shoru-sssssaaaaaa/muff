@@ -33,7 +33,7 @@ fun Application.configureRouting(
             attestRoutes(attestService)
         }
         catalogRoutes(feedService)
-        feedRoutes(feedService)
+        feedRoutes(feedService, rssPollingService)
         eventRoutes()
         if (categoryClassifier != null && rssPollingService != null) {
             adminRoutes(feedService, categoryClassifier, rssPollingService)

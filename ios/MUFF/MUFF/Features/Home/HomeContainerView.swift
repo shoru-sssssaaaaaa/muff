@@ -27,6 +27,10 @@ struct HomeContainerView: View {
     @State private var popularRefreshTrigger = 0
     @State private var newRefreshTrigger = 0
     @State private var followRefreshTrigger = 0
+    @State private var isRefreshing = false
+    @State private var lastRefreshDate: Date?
+
+    private let apiClient = APIClient()
 
     var body: some View {
         VStack(spacing: 0) {
@@ -80,16 +84,36 @@ struct HomeContainerView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    switch selectedTab {
-                    case .popular: popularRefreshTrigger += 1
-                    case .new: newRefreshTrigger += 1
-                    case .follow: followRefreshTrigger += 1
+                if isRefreshing {
+                    ProgressView()
+                } else {
+                    Button {
+                        triggerRefresh()
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
                     }
-                } label: {
-                    Image(systemName: "arrow.clockwise")
                 }
             }
+        }
+    }
+
+    private func triggerRefresh() {
+        guard !isRefreshing else { return }
+        isRefreshing = true
+
+        Task {
+            let shouldCallAPI = lastRefreshDate.map { Date().timeIntervalSince($0) >= 60 } ?? true
+            if shouldCallAPI {
+                try? await apiClient.refreshFeed()
+                lastRefreshDate = Date()
+            }
+
+            switch selectedTab {
+            case .popular: popularRefreshTrigger += 1
+            case .new: newRefreshTrigger += 1
+            case .follow: followRefreshTrigger += 1
+            }
+            isRefreshing = false
         }
     }
 }

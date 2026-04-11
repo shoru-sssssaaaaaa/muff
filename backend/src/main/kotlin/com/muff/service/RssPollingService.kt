@@ -67,8 +67,12 @@ class RssPollingService(
 
     private fun pollSource(source: SourceRecord) {
         val input = SyndFeedInput()
+        val connection = URI(source.rssUrl).toURL().openConnection() as java.net.HttpURLConnection
+        connection.setRequestProperty("User-Agent", "MUFF/1.0 RSS Reader")
+        connection.connectTimeout = 15_000
+        connection.readTimeout = 15_000
         val feed =
-            URI(source.rssUrl).toURL().openStream().use { stream ->
+            connection.inputStream.use { stream ->
                 XmlReader(stream).use { reader ->
                     input.build(reader)
                 }
